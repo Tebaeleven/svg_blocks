@@ -4,7 +4,7 @@
 let s = Snap('#svg');
 
 // クローン用のsvg要素
-let cloneSvg = s.rect(10, 10, 25, 15, 8, 8);
+let cloneSvg = s.rect(10, 10, 35, 15, 4, 4);
 cloneSvg.attr({ stroke: '#f00', strokeWidth: 2, fill: '#f00', "fill-opacity": 0.5 });
 
 let count = 0
@@ -28,10 +28,15 @@ cloneSvg.click(function () {
 
 // ボタンがクリックされた時の処理
 document.getElementById("add_btn").addEventListener("click", function () {
-    makeClone(0,0)
-    makeClone(100, 0)
-    makeClone(0, 100)
-    makeClone(100, 100)
+    makeClone(0, 0)
+
+    for (let i = 0; i < 50; i++) {
+        let max = 300
+        let min = -300
+        let x = Math.random() * (max - min) + min;
+        let y = Math.random() * (max - min) + min;
+        makeClone(x,y)
+    }
     // newSvg.click(function () {
     //     alert(this.data("count"));
     // });
@@ -41,8 +46,11 @@ document.getElementById("move").addEventListener("click", function () {
     moveClone()
 })
 
-document.getElementById("x+").addEventListener("click", function () {
+document.getElementById("reset").addEventListener("click", function () {
+    cameraX = 0
+    cameraY = 0
     moveClone()
+
 })
 function makeClone(x,y) {
     // let x = Math.random() * (s.node.clientWidth - newSvg.getBBox().width);
@@ -57,9 +65,8 @@ function makeClone(x,y) {
     let localX = newSvg.transform().localMatrix.e;
     let localY = newSvg.transform().localMatrix.f;
     SvgXY.push({ x: localX, y: localY });
-    console.log(SvgXY)
     count++;
-    
+    newSvg.drag()
     moveClone()
     console.log(count)
 }
@@ -68,10 +75,9 @@ function moveClone() {
     for (let i = 0; i < SvgArray.length; i++) {
         let localX = SvgXY[i].x;
         let localY = SvgXY[i].y;
-        SvgArray[i].transform('T' + (localX * zoom + cameraX * zoom) + ',' + (localY * zoom + cameraY * zoom));
+        SvgArray[i].transform('T' + ((localX * zoom - cameraX * zoom) + 270) + ',' + ((localY * zoom - cameraY * zoom) + 270)+",s"+zoom);
     }
 }
-
 
 document.addEventListener("mousedown", function () {
     mouseDown = true;
@@ -94,7 +100,6 @@ const inputElem = document.getElementById('x');
 inputElem.addEventListener('input', rangeOnChange);
 
 function rangeOnChange(e) {
-    console.log(e.target.value);
     cameraX = Number(e.target.value)
     moveClone()
 }
@@ -103,8 +108,7 @@ const zoomElem = document.getElementById('zoom');
 zoomElem.addEventListener('input', zoomOnChange);
 
 function zoomOnChange(e) {
-    zoom = e.target.value
-    console.log(zoom);
+    zoom = Number(e.target.value)
     moveClone()
 }
 
@@ -115,3 +119,28 @@ function zoomOnChange(e) {
     //(エディタ画面に置かれたクローンのドラッグ、ボタンからクローンされた時のドラッグの挙動を実装した方がわかりやすいかも)
 
 
+window.onmousewheel = function () {
+    if (event.wheelDelta > 0) {
+        //mainCamera.zoomTo(4, 100);
+    } else {
+        //mainCamera.zoomTo(1, 100);
+    }
+}
+document.addEventListener("mousewheel", function (event) {
+    let delta = -event.deltaY
+    let deltaLimit = 0.3;
+    let zoomMax = 20;
+    let zoomMin = 0.1;
+
+    // 一定数を超えないようにする
+    delta = clamp(delta, -deltaLimit, deltaLimit);
+    zoom += delta * zoom/2
+    zoom = clamp(zoom, zoomMin, zoomMax);
+
+    console.log(zoom)
+    moveClone()
+});
+
+function clamp(value, min, max) {
+    return Math.min(Math.max(value, min), max);
+}
