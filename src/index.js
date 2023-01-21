@@ -30,7 +30,13 @@ cloneSvg.click(function () {
 document.getElementById("add_btn").addEventListener("click", function () {
     // makeClone(0, 0)
     // makeClone(0, 100)
+    makeBlocks()
+    // newSvg.click(function () {
+    //     alert(this.data("count"));
+    // });
+});
 
+function makeBlocks() {
     for (let i = 0; i < 10; i++) {
         let max = 300
         let min = -300
@@ -38,11 +44,7 @@ document.getElementById("add_btn").addEventListener("click", function () {
         let y = Math.random() * (max - min) + min;
         makeClone(parseInt(x), parseInt(y))
     }
-    // newSvg.click(function () {
-    //     alert(this.data("count"));
-    // });
-});
-
+}
 document.getElementById("move").addEventListener("click", function () {
     moveClone()
 })
@@ -74,7 +76,7 @@ function makeClone(x,y) {
     // moveClone()
     // console.log(count)
     // SVGファイルのパス
-    var svgPath = './Untitled.svg';
+    var svgPath = './2.svg';
     var g = s.group(); // 追加したグループを作成
 
     // SVGファイルを読み込み、クローンを作成
@@ -89,6 +91,7 @@ function makeClone(x,y) {
         let localY = g.transform().localMatrix.f;
         SvgXY.push({ x: localX, y: localY });
         g.drag()
+        moveClone()
         console.log(SvgArray)
     });
 
@@ -98,8 +101,8 @@ function moveClone() {
     for (let i = 0; i < SvgArray.length; i++) {
         let localX = SvgXY[i].x;
         let localY = SvgXY[i].y;
-        SvgArray[i].select("tspan").node.textContent = localX +","+localY;
-        SvgArray[i].transform('T' + ((localX * zoom - cameraX * zoom) ) + ',' + ((localY * zoom - cameraY * zoom))+",s"+zoom);
+        // SvgArray[i].select("tspan").node.textContent = localX +","+localY;
+        SvgArray[i].transform('T' + ((localX * zoom - cameraX * zoom)+300 ) + ',' + ((localY * zoom - cameraY * zoom)+300)+",s"+zoom);
     }
 }
 
@@ -136,7 +139,10 @@ function zoomOnChange(e) {
     moveClone()
 }
 
-//TODO オリジナルを隠すorオリジナルを作成しないようにする
+//TODO snap.svgライブラリを使わずに、生のjsで直接divなどにsvgを埋め込んでテストしてみる
+    //snap.svgを使うと、inputを使っても値を入力することができないため、直接htmlに埋め込んだ方が良さそう
+    //問題
+        //svgの座標、複製、配列に入れて扱うことができるか。
 
 //TODO ボタンを押すとその位置からクローンを選択した状態でエディタ画面におけるようにする
     //TODO Drag関数を自作した方が良いかもしれない
@@ -168,3 +174,4 @@ document.addEventListener("mousewheel", function (event) {
 function clamp(value, min, max) {
     return Math.min(Math.max(value, min), max);
 }
+makeBlocks()
