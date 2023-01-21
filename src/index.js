@@ -28,14 +28,15 @@ cloneSvg.click(function () {
 
 // ボタンがクリックされた時の処理
 document.getElementById("add_btn").addEventListener("click", function () {
-    makeClone(0, 0)
+    // makeClone(0, 0)
+    // makeClone(0, 100)
 
-    for (let i = 0; i < 50; i++) {
+    for (let i = 0; i < 10; i++) {
         let max = 300
         let min = -300
         let x = Math.random() * (max - min) + min;
         let y = Math.random() * (max - min) + min;
-        makeClone(x,y)
+        makeClone(parseInt(x), parseInt(y))
     }
     // newSvg.click(function () {
     //     alert(this.data("count"));
@@ -56,26 +57,49 @@ function makeClone(x,y) {
     // let x = Math.random() * (s.node.clientWidth - newSvg.getBBox().width);
     // let y = Math.random() * (s.node.clientHeight - newSvg.getBBox().height);
     //クローンを作成
-    let newSvg = cloneSvg.clone();
-    // クローンを追加
-    s.append(newSvg);
-    newSvg.transform('t' + ((x)) + ',' + ((y)));
-    newSvg.data("count", count)
-    SvgArray.push(newSvg);
-    let localX = newSvg.transform().localMatrix.e;
-    let localY = newSvg.transform().localMatrix.f;
-    SvgXY.push({ x: localX, y: localY });
-    count++;
-    newSvg.drag()
-    moveClone()
-    console.log(count)
+    // let newSvg = cloneSvg.clone();
+    // var text = s.text(0, 0, "Hello World!");
+    // // クローンを追加
+    // newSvg.append(text);
+    // s.append(newSvg);
+
+    // newSvg.transform('t' + ((x)) + ',' + ((y)));
+    // newSvg.data("count", count)
+    // SvgArray.push(newSvg);
+    // let localX = newSvg.transform().localMatrix.e;
+    // let localY = newSvg.transform().localMatrix.f;
+    // SvgXY.push({ x: localX, y: localY });
+    // count++;
+    // newSvg.drag()
+    // moveClone()
+    // console.log(count)
+    // SVGファイルのパス
+    var svgPath = './Untitled.svg';
+    var g = s.group(); // 追加したグループを作成
+
+    // SVGファイルを読み込み、クローンを作成
+    Snap.load(svgPath, function (svg) {
+        var clone = svg.select('svg').clone();
+        g.append(clone);
+        console.log(clone)
+        // g.select("tspan").node.textContent = "キタコレ！"
+        g.transform('t' + ((x)) + ',' + ((y)));
+        SvgArray.push(g)
+        let localX = g.transform().localMatrix.e;
+        let localY = g.transform().localMatrix.f;
+        SvgXY.push({ x: localX, y: localY });
+        g.drag()
+        console.log(SvgArray)
+    });
+
 }
 
 function moveClone() {
     for (let i = 0; i < SvgArray.length; i++) {
         let localX = SvgXY[i].x;
         let localY = SvgXY[i].y;
-        SvgArray[i].transform('T' + ((localX * zoom - cameraX * zoom) + 270) + ',' + ((localY * zoom - cameraY * zoom) + 270)+",s"+zoom);
+        SvgArray[i].select("tspan").node.textContent = localX +","+localY;
+        SvgArray[i].transform('T' + ((localX * zoom - cameraX * zoom) ) + ',' + ((localY * zoom - cameraY * zoom))+",s"+zoom);
     }
 }
 
