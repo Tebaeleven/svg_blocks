@@ -3,7 +3,8 @@ let svg = document.getElementById("svg")
 var original = document.getElementById("rect");
 
 let zoom = 0
-
+let cameraX = 0
+let cameraY = 0
 let svgArray = []
 let SvgXY = []
 drawXYAxis()
@@ -43,10 +44,8 @@ function moveClone() {
         let HalfWidth = getWidth(svgArray[i]) / 2
         let HalfHeight = getHeight(svgArray[i])/2
         
-        svgArray[i].setAttribute("x", (localX + 250 - HalfWidth -5))
+        svgArray[i].setAttribute("x", (localX + 250 - HalfWidth -5)-cameraX)
         svgArray[i].setAttribute("y", (localY + 250 - HalfHeight - 5))
-        console.log(i+"番目")
-        console.log(SvgXY[i])
     }
 }
 
@@ -105,4 +104,13 @@ function drawXYAxis() {
 
 function getRandomArbitrary(min, max) {
     return Math.random() * (max - min) + min;
+}
+
+const inputElem = document.getElementById('x');
+inputElem.addEventListener('input', rangeOnChange);
+
+function rangeOnChange(e) {
+    cameraX = Number(e.target.value)
+    console.log(cameraX)
+    moveClone()
 }
