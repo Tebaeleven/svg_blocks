@@ -14,9 +14,9 @@ let drawArea = 200
 drawXYAxis()
 
 makeClone(0, 0)
-makeClone(100, 0)
-makeClone(0, 100)
-makeClone(100, 100)
+makeClone(200, 0)
+makeClone(0, 200)
+makeClone(200, 200)
 
 
 function makeClone(x, y) {

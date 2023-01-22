@@ -13,10 +13,13 @@
     <svg  id="rect" x="0" y="0"  >
         <g transform="scale(1)"width="10">
 
-        <rect  x="5" y="5" width="170" height="30" rx="10" ry="10" fill="#e74c3c" stroke="red" stroke-width="5" />
-        <foreignObject x="130" y="10" width="30" height="20" >
-            <input type="text" id="input-size" value="名刺">
+        <rect  x="5" y="5" width="170" height="40" rx="10" ry="10" fill="#e74c3c" stroke="red" stroke-width="5" />
+        <foreignObject x="130" y="10" width="35" height="30" >
+            <input type="text" id="input-size" value="変数">
         </foreignObject>
+        <text x="20" y="30" font-size="15">
+            ダミーテキスト
+        </text>
         </g>
     </svg>
 </svg>
@@ -49,6 +52,9 @@ svg{
     margin: 0;
     user-select: none;
 }
+g{
+    position: relative;
+}
 foreignObject{
     /* background-color:rgb(14, 172, 17); */
     position: relative;
@@ -69,7 +75,9 @@ foreignObject input{
     top: 50%;
     left: 50%;
     transform: translateY(-50%) translateX(-50%);
-    
+}
+text{
+    fill: white;
 }
 </style>
 </html>
