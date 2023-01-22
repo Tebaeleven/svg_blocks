@@ -7,7 +7,7 @@ let cameraX = 0
 let cameraY = 0
 let svgArray = []
 let SvgXY = []
-let drawArea = 500
+let drawArea = 200
 // for (let i = 0; i <200; i++) {
 //     makeClone(getRandomArbitrary(-drawArea, drawArea), getRandomArbitrary(-drawArea, drawArea))
 // }
@@ -37,7 +37,7 @@ function makeClone(x, y) {
     svgArray.push(clone);
     original.parentNode.appendChild(clone);
     original.style.opacity = 0.5
-
+    updateEventListeners();
     moveClone()
 
 }
@@ -131,47 +131,47 @@ function zoomOnChange(e) {
 function clamp(value, min, max) {
     return Math.min(Math.max(value, min), max);
 }
-svgArray.forEach(function (clone, index) {
-    clone.addEventListener("mousedown", function (event) {
-        event.stopPropagation();
-        // ドラッグ開始時のマウス位置
-        var startX = event.clientX;
-        var startY = event.clientY;
-        var elementX = SvgXY[index].x
-        var elementY = SvgXY[index].y
-        
-        document.addEventListener("mousemove", moveElement);
-        // mouseupイベントを追加
-        document.addEventListener("mouseup", stopDrag);
+function updateEventListeners() {
+    svgArray.forEach(function (clone, index) {
+        clone.addEventListener("mousedown", function (event) {
+            event.stopPropagation();
+            // ドラッグ開始時のマウス位置
+            var startX = event.clientX;
+            var startY = event.clientY;
+            var elementX = SvgXY[index].x;
+            var elementY = SvgXY[index].y;
 
-        function moveElement(event) {
-            // 現在のマウス位置
-            var currentX = event.clientX;
-            var currentY = event.clientY;
-            // ドラッグした距離
-            var dx = currentX - startX;
-            var dy = currentY - startY;
-            // 要素の新しい位置
-            var newX = elementX + dx/zoom;
-            var newY = elementY + dy/zoom;
-            // 要素の位置を更新
-            SvgXY[index].x = newX
-            SvgXY[index].y = newY
-            moveClone()
+            document.addEventListener("mousemove", moveElement);
+            // mouseupイベントを追加
+            document.addEventListener("mouseup", stopDrag);
 
-        }
-        function stopDrag() {
-            dragBlock=false
-            document.removeEventListener("mousemove", moveElement);
-            document.removeEventListener("mouseup", stopDrag);
-        }
-        // alert("clone clicked!" + index);
+            function moveElement(event) {
+                // 現在のマウス位置
+                var currentX = event.clientX;
+                var currentY = event.clientY;
+                // ドラッグした距離
+                var dx = currentX - startX;
+                var dy = currentY - startY;
+                // 要素の新しい位置
+                var newX = elementX + dx / zoom;
+                var newY = elementY + dy / zoom;
+                // 要素の位置を更新
+                SvgXY[index].x = newX;
+                SvgXY[index].y = newY;
+                moveClone();
+            }
+            function stopDrag() {
+                dragBlock = false;
+                document.removeEventListener("mousemove", moveElement);
+                document.removeEventListener("mouseup", stopDrag);
+            }
+            // alert("clone clicked!" + index);
+        });
     });
-});
+}
+
 
 svg.addEventListener("mousedown", function (event) {
-
-
     // ドラッグ開始時のマウス位置
     var startX = event.clientX;
     var startY = event.clientY;
@@ -204,3 +204,22 @@ svg.addEventListener("mousedown", function (event) {
     }
     // alert("clone clicked!" + index);
 });
+
+document.addEventListener("mousewheel", function (event) {
+    let delta = -event.deltaY
+    let deltaLimit = 0.2;
+
+    // 一定数を超えないようにする
+    delta = clamp(delta, -deltaLimit, deltaLimit);
+    zoom += delta * zoom / 2
+    zoom = clamp(Number(zoom), 0.1, 5)
+
+    console.log(zoom)
+    moveClone()
+});
+
+function onClickHandler(event) {
+    makeClone(getRandomArbitrary(-drawArea, drawArea), getRandomArbitrary(-drawArea, drawArea))
+}
+let add = document.getElementById("add_btn")
+add.addEventListener("click", onClickHandler);
