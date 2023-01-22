@@ -17,8 +17,8 @@ drawXYAxis()
 
 makeClone(0, 0)
 makeClone(200, 0)
-makeClone(0, 200)
-makeClone(200, 200)
+// makeClone(0, 200)
+// makeClone(200, 200)
 
 function makeClone(x, y) {
     original.style.opacity = 1
@@ -153,43 +153,29 @@ function updateEventListeners() {
             document.addEventListener("mouseup", stopDrag);
 
             function moveElement(event) {
-
-
-
-
                 let dragIndex = index
+                let cloneIndex=0
                 svgArray.forEach(function (svgClone, cloneIndex) {
-                    if (cloneIndex === dragIndex) {
 
-                    } else {
-                        var canConnect = connect(dragIndex, cloneIndex)
-                        if (canConnect === true) {
-                            document.addEventListener("mouseup", test);
-                            function test() {
-                                if (cloneIndex === dragIndex) {
-                                } else {
-                                    canConnect = connect(index, cloneIndex)
-                                    if (canConnect === true) {
-                                        let cloneX = SvgXY[cloneIndex].x
-                                        let cloneY = SvgXY[cloneIndex].y
-                                        SvgXY[index].x = cloneX 
-                                        SvgXY[index].y = cloneY+50
-                                        moveClone()
-                                    }
-                                }
+                })
+                if (cloneIndex === dragIndex) {
+
+                } else {
+                    document.addEventListener("mouseup", moveConnect);
+                    function moveConnect() {
+                        if (cloneIndex === dragIndex) {
+                        } else {
+                            canConnect = connect(index, cloneIndex)
+                            if (canConnect === true) {
+                                let cloneX = SvgXY[cloneIndex].x
+                                let cloneY = SvgXY[cloneIndex].y
+                                SvgXY[index].x = cloneX
+                                SvgXY[index].y = cloneY + 50
+                                moveClone()
                             }
                         }
                     }
-                })
-                // console.log("離れた")
-                // document.addEventListener("mouseup", a);
-                // function a() {
-                //     SvgXY[1].connected = false
-
-                //     SvgXY[index].x = 0
-                //     moveClone()
-                // }
-
+                }
                 // 現在のマウス位置
                 var currentX = event.clientX;
                 var currentY = event.clientY;
@@ -203,7 +189,7 @@ function updateEventListeners() {
 
                 SvgXY[index].x = newX;
                 SvgXY[index].y = newY;
-                console.log("index: " + index)
+                // console.log("index: " + index)
                 moveClone();
 
 
