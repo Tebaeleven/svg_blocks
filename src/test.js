@@ -7,11 +7,12 @@ let cameraX = 0
 let cameraY = 0
 let svgArray = []
 let SvgXY = []
-drawXYAxis()
 let drawArea = 500
 // for (let i = 0; i <200; i++) {
 //     makeClone(getRandomArbitrary(-drawArea, drawArea), getRandomArbitrary(-drawArea, drawArea))
 // }
+drawXYAxis()
+
 makeClone(0, 0)
 makeClone(100, 0)
 makeClone(0, 100)
@@ -132,6 +133,7 @@ function clamp(value, min, max) {
 }
 svgArray.forEach(function (clone, index) {
     clone.addEventListener("mousedown", function (event) {
+        event.stopPropagation();
         // ドラッグ開始時のマウス位置
         var startX = event.clientX;
         var startY = event.clientY;
@@ -141,6 +143,7 @@ svgArray.forEach(function (clone, index) {
         document.addEventListener("mousemove", moveElement);
         // mouseupイベントを追加
         document.addEventListener("mouseup", stopDrag);
+
         function moveElement(event) {
             // 現在のマウス位置
             var currentX = event.clientX;
@@ -158,9 +161,46 @@ svgArray.forEach(function (clone, index) {
 
         }
         function stopDrag() {
+            dragBlock=false
             document.removeEventListener("mousemove", moveElement);
             document.removeEventListener("mouseup", stopDrag);
         }
         // alert("clone clicked!" + index);
     });
+});
+
+svg.addEventListener("mousedown", function (event) {
+
+
+    // ドラッグ開始時のマウス位置
+    var startX = event.clientX;
+    var startY = event.clientY;
+    var elementX = cameraX
+    var elementY = cameraY
+
+    document.addEventListener("mousemove", moveElement);
+    // mouseupイベントを追加
+    document.addEventListener("mouseup", stopDrag);
+    function moveElement(event) {
+        // 現在のマウス位置
+        var currentX = event.clientX;
+        var currentY = event.clientY;
+        // ドラッグした距離
+        var dx = currentX - startX;
+        var dy = currentY - startY;
+        // 要素の新しい位置
+        var newX = elementX - dx / zoom;
+        var newY = elementY - dy / zoom;
+        // 要素の位置を更新
+        cameraX = newX
+        cameraY = newY
+        moveClone()
+
+    }
+    function stopDrag() {
+        dragBack = false
+        document.removeEventListener("mousemove", moveElement);
+        document.removeEventListener("mouseup", stopDrag);
+    }
+    // alert("clone clicked!" + index);
 });
