@@ -2,7 +2,7 @@ let svg = document.getElementById("svg")
 // 要素を取得
 var original = document.getElementById("rect");
 
-let zoom = 0
+let zoom = 1
 let cameraX = 0
 let cameraY = 0
 let svgArray = []
@@ -41,11 +41,10 @@ function moveClone() {
     for (let i = 0; i < svgArray.length; ++i) {
         let localX = SvgXY[i].x
         let localY = SvgXY[i].y
-        let HalfWidth = getWidth(svgArray[i]) / 2
+        let HalfWidth = getWidth(svgArray[i])/2
         let HalfHeight = getHeight(svgArray[i])/2
-        
-        svgArray[i].setAttribute("x", (localX + 250 - HalfWidth -5)-cameraX)
-        svgArray[i].setAttribute("y", (localY + 250 - HalfHeight - 5))
+        svgArray[i].setAttribute("x", ((localX-cameraX)*zoom)+250-HalfWidth-5)
+        svgArray[i].setAttribute("y", ((localY - cameraY) * zoom) + 250 - HalfHeight - 5)
     }
 }
 
@@ -112,5 +111,12 @@ inputElem.addEventListener('input', rangeOnChange);
 function rangeOnChange(e) {
     cameraX = Number(e.target.value)
     console.log(cameraX)
+    moveClone()
+}
+const zoomElem = document.getElementById('zoom');
+zoomElem.addEventListener('input', zoomOnChange);
+
+function zoomOnChange(e) {
+    zoom = Number(e.target.value)
     moveClone()
 }
