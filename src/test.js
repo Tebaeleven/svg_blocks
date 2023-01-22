@@ -17,8 +17,8 @@ drawXYAxis()
 
 makeClone(0, 0)
 makeClone(200, 0)
-// makeClone(0, 200)
-// makeClone(200, 200)
+makeClone(0, 200)
+makeClone(200, 200)
 
 function makeClone(x, y) {
     original.style.opacity = 1
@@ -146,18 +146,17 @@ function updateEventListeners() {
             var startY = event.clientY;
             var elementX = SvgXY[index].x;
             var elementY = SvgXY[index].y;
-
             // console.log(canConnect)
             document.addEventListener("mousemove", moveElement);
             // mouseupイベントを追加
             document.addEventListener("mouseup", stopDrag);
 
             function moveElement(event) {
+
                 let dragIndex = index
-                let cloneIndex=0
+                // let cloneIndex=0
                 svgArray.forEach(function (svgClone, cloneIndex) {
 
-                })
                 if (cloneIndex === dragIndex) {
 
                 } else {
@@ -166,16 +165,36 @@ function updateEventListeners() {
                         if (cloneIndex === dragIndex) {
                         } else {
                             canConnect = connect(index, cloneIndex)
-                            if (canConnect === true) {
                                 let cloneX = SvgXY[cloneIndex].x
                                 let cloneY = SvgXY[cloneIndex].y
-                                SvgXY[index].x = cloneX
-                                SvgXY[index].y = cloneY + 50
-                                moveClone()
-                            }
+                                if (canConnect === "left") {
+                                    SvgXY[index].x = cloneX - 180
+                                    SvgXY[index].y = cloneY 
+                                    moveClone()
+
+                                }
+                                if (canConnect === "bottom") {
+                                    SvgXY[index].x = cloneX
+                                    SvgXY[index].y = cloneY + 50
+                                    moveClone()
+                                }
+                                if (canConnect === "top") {
+                                    SvgXY[index].x = cloneX 
+                                    SvgXY[index].y = cloneY - 50
+                                    moveClone()
+
+                                }
+                                if (canConnect === "right") {
+                                    SvgXY[index].x = cloneX + 180
+                                    SvgXY[index].y = cloneY
+                                    moveClone()
+                                }
+
                         }
                     }
                 }
+                })
+
                 // 現在のマウス位置
                 var currentX = event.clientX;
                 var currentY = event.clientY;
@@ -195,7 +214,6 @@ function updateEventListeners() {
 
             }
             function stopDrag() {
-                dragBlock = false;
                 document.removeEventListener("mousemove", moveElement);
                 document.removeEventListener("mouseup", stopDrag);
             }
@@ -233,7 +251,6 @@ svg.addEventListener("mousedown", function (event) {
         cameraX = newX
         cameraY = newY
         moveClone()
-
     }
     function stopDrag() {
         document.removeEventListener("mousemove", moveElement);
@@ -242,20 +259,45 @@ svg.addEventListener("mousedown", function (event) {
     // alert("clone clicked!" + index);
 });
 function connect(draggingIndex, cloneIndex) {
-
     // ドラッグしているクローンの位置
-    let margin = 20
+    let margin = 30
     var draggingX = SvgXY[draggingIndex].x
     var draggingY = SvgXY[draggingIndex].y
     let cloneX = SvgXY[cloneIndex].x
     let cloneY = SvgXY[cloneIndex].y
-    let distanceX = Math.abs(cloneX - draggingX)
-    let distanceY = Math.abs(cloneY - draggingY)-50
-    // return Math.abs(cloneX - draggingX) - 170 <= margin && Math.abs(cloneY + 0 - draggingY) <= margin;
-    // return distanceY
+
+    let bottomX = Math.abs(cloneX - draggingX)
+    let bottomY = Math.abs(cloneY + 40 - draggingY)
+    let bottom = bottomX <= margin && bottomY <= margin
+
+    let leftX = Math.abs(cloneX - 170 - draggingX)
+    let leftY = Math.abs(cloneY - draggingY)
+    let left = leftX <= margin && leftY <= margin
+
+    let topX = Math.abs(cloneX - draggingX)
+    let topY = Math.abs(cloneY - 40 - draggingY)
+    let top = topX <= margin && topY <= margin
+
+    let rightX = Math.abs(cloneX + 170 - draggingX)
+    let rightY = Math.abs(cloneY - draggingY)
+    let right = rightX <= margin && rightY <= margin
+
+    let result=false
+    if (left) {
+        result="left"
+    }
+    if (right) {
+        result = "right"
+    }
+    if (bottom) {
+        result = "bottom"
+    }
+    if (top) {
+        result = "top"
+    }
     // console.log("x:" + distanceX + " y:" + distanceY)
-    // console.log(distanceX <= margin && distanceY <= margin)
-    return distanceX <= margin && distanceY <= margin
+
+    return result
 }
 document.addEventListener("mousewheel", function (event) {
     let delta = -event.deltaY
