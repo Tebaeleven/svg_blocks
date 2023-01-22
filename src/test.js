@@ -8,6 +8,8 @@ let cameraY = 0
 let svgArray = []
 let SvgXY = []
 let drawArea = 200
+let cloneCounter = 0
+
 // for (let i = 0; i <200; i++) {
 //     makeClone(getRandomArbitrary(-drawArea, drawArea), getRandomArbitrary(-drawArea, drawArea))
 // }
@@ -18,28 +20,30 @@ makeClone(200, 0)
 makeClone(0, 200)
 makeClone(200, 200)
 
-
 function makeClone(x, y) {
     original.style.opacity = 1
     var clone = original.cloneNode(true);
     // setWidth(clone, getRandomArbitrary(50, 100))
     // setHeight(clone, getRandomArbitrary(50, 100))
     // console.log(clone)
-
+    // let text = svgArray[i].getElementsByTagName("text")
+    // text[0].setAttribute("transform", "scale(" + zoom + ")")
     // SvgXY.push({ x: x, y: y });
+    var text = clone.querySelector("#rect text");
+    text.textContent = cloneCounter;
     let width = getWidth(clone)
     let height = getHeight(clone)
     width /= 2
     height /= 2
     clone.setAttribute("x", x)
     clone.setAttribute("y", y)
-    SvgXY.push({ x: x, y: y });
+    SvgXY.push({ x: x, y: y, connected: false });
     svgArray.push(clone);
     original.parentNode.appendChild(clone);
     original.style.opacity = 0.5
     updateEventListeners();
     moveClone()
-
+    cloneCounter++;
 }
 
 function moveClone() {
@@ -131,6 +135,7 @@ function zoomOnChange(e) {
 function clamp(value, min, max) {
     return Math.min(Math.max(value, min), max);
 }
+var dd = false
 function updateEventListeners() {
     svgArray.forEach(function (clone, index) {
         clone.addEventListener("mousedown", function (event) {
@@ -142,11 +147,49 @@ function updateEventListeners() {
             var elementX = SvgXY[index].x;
             var elementY = SvgXY[index].y;
 
+            // console.log(canConnect)
             document.addEventListener("mousemove", moveElement);
             // mouseupイベントを追加
             document.addEventListener("mouseup", stopDrag);
 
             function moveElement(event) {
+
+
+
+
+                let dragIndex = index
+                svgArray.forEach(function (svgClone, cloneIndex) {
+                    if (cloneIndex === dragIndex) {
+
+                    } else {
+                        var canConnect = connect(dragIndex, cloneIndex)
+                        if (canConnect === true) {
+                            document.addEventListener("mouseup", test);
+                            function test() {
+                                if (cloneIndex === dragIndex) {
+                                } else {
+                                    canConnect = connect(index, cloneIndex)
+                                    if (canConnect === true) {
+                                        let cloneX = SvgXY[cloneIndex].x
+                                        let cloneY = SvgXY[cloneIndex].y
+                                        SvgXY[index].x = cloneX 
+                                        SvgXY[index].y = cloneY+50
+                                        moveClone()
+                                    }
+                                }
+                            }
+                        }
+                    }
+                })
+                // console.log("離れた")
+                // document.addEventListener("mouseup", a);
+                // function a() {
+                //     SvgXY[1].connected = false
+
+                //     SvgXY[index].x = 0
+                //     moveClone()
+                // }
+
                 // 現在のマウス位置
                 var currentX = event.clientX;
                 var currentY = event.clientY;
@@ -157,9 +200,13 @@ function updateEventListeners() {
                 var newX = elementX + dx / zoom;
                 var newY = elementY + dy / zoom;
                 // 要素の位置を更新
+
                 SvgXY[index].x = newX;
                 SvgXY[index].y = newY;
+                console.log("index: " + index)
                 moveClone();
+
+
             }
             function stopDrag() {
                 dragBlock = false;
@@ -203,13 +250,27 @@ svg.addEventListener("mousedown", function (event) {
 
     }
     function stopDrag() {
-        dragBack = false
         document.removeEventListener("mousemove", moveElement);
         document.removeEventListener("mouseup", stopDrag);
     }
     // alert("clone clicked!" + index);
 });
+function connect(draggingIndex, cloneIndex) {
 
+    // ドラッグしているクローンの位置
+    let margin = 20
+    var draggingX = SvgXY[draggingIndex].x
+    var draggingY = SvgXY[draggingIndex].y
+    let cloneX = SvgXY[cloneIndex].x
+    let cloneY = SvgXY[cloneIndex].y
+    let distanceX = Math.abs(cloneX - draggingX)
+    let distanceY = Math.abs(cloneY - draggingY)-50
+    // return Math.abs(cloneX - draggingX) - 170 <= margin && Math.abs(cloneY + 0 - draggingY) <= margin;
+    // return distanceY
+    // console.log("x:" + distanceX + " y:" + distanceY)
+    // console.log(distanceX <= margin && distanceY <= margin)
+    return distanceX <= margin && distanceY <= margin
+}
 document.addEventListener("mousewheel", function (event) {
     let delta = -event.deltaY
     let deltaLimit = 0.2;
@@ -233,4 +294,10 @@ function resetHandler() {
     cameraX = 0
     cameraY = 0
     moveClone()
+}
+let indexButton = document.getElementById("index")
+indexButton.addEventListener("click", onClickHandler);
+function onClickHandler(event) {
+    cloneIndex += 1
+    console.log(cloneIndex)
 }
