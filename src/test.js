@@ -9,9 +9,9 @@ let SvgXY = []
 drawXYAxis()
 
 makeClone(0, 0)
-// makeClone(100, 0)
-// makeClone(0, 100)
-// makeClone(100, 100)
+makeClone(100, 0)
+makeClone(0, 100)
+makeClone(100, 100)
 
 
 function makeClone(x, y) {
@@ -26,26 +26,27 @@ function makeClone(x, y) {
     let height = getHeight(clone)
     width /= 2
     height /= 2
-    clone.setAttribute("x", x - 5 - width)
-    clone.setAttribute("y", y - 5 - height)
+    clone.setAttribute("x", x)
+    clone.setAttribute("y", y)
+    SvgXY.push({ x: x, y: y });
     svgArray.push(clone);
-
     original.parentNode.appendChild(clone);
-    original.style.opacity = 0.3
+    original.style.opacity = 0
     moveClone()
 
 }
 
 function moveClone() {
     for (let i = 0; i < svgArray.length; ++i) {
-        let localX = Number(svgArray[i].getAttribute("x"))
-        let localY = Number(svgArray[i].getAttribute("y"))
-        svgArray[i].setAttribute("x", (localX +250))
-        svgArray[i].setAttribute("y", (localY +250))
+        let localX = SvgXY[i].x
+        let localY = SvgXY[i].y
+        let HalfWidth = getWidth(svgArray[i]) / 2
+        let HalfHeight = getHeight(svgArray[i])/2
+        
+        svgArray[i].setAttribute("x", (localX + 250 - HalfWidth -5))
+        svgArray[i].setAttribute("y", (localY + 250 - HalfHeight - 5))
         console.log(i+"番目")
-        console.log(svgArray[i].getAttribute("x"))
-        console.log(svgArray[i].getAttribute("y"))
-        console.log(svgArray[i])
+        console.log(SvgXY[i])
     }
 }
 
