@@ -11,7 +11,7 @@
 <svg id="svg" width="500" height="500"
     style="border-width: thick; border-color: #EEE; border-style: solid; display: block; margin: auto;">
     <svg  id="rect" x="0" y="0" >
-        <g transform="">
+        <g transform="scale(1)">
 
         <rect  x="5" y="5" width="60" height="30" rx="10" ry="10" fill="#e74c3c" stroke="red" stroke-width="5" />
         <foreignObject x="18" y="7" width="30" height="150">
@@ -27,7 +27,7 @@
                         <input type="text" id="input-size" value="100"
                             style="background-color:transparent;border: none; outline: none;">
                     </foreignObject>
-        </svg> -->
+        </svg>transform="scale(2)" -->
     <button id="add_btn">Add</button>
     <button id="x+">x1+</button>
     <button id="x-">x1-</button>
@@ -36,8 +36,8 @@
 
 
 
-    🐢 <input id="x" type="range" min="-400" max="400" value="0"> 🐰
-    👀 <input id="zoom" type="range" min="1" max="40" step="0.01" value="1"> 👀
+    🐢 <input id="x" type="range" min="-400" max="400" value="0"step="0.01"> 🐰
+    👀 <input id="zoom" type="range" min="0.1" max="7" step="0.01" value="1"> 👀
 
     <script src="./snap.svg-min.js"></script>
     <!-- <script src="./svg.min.js"></script> -->

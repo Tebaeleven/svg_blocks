@@ -32,7 +32,7 @@ function makeClone(x, y) {
     SvgXY.push({ x: x, y: y });
     svgArray.push(clone);
     original.parentNode.appendChild(clone);
-    original.style.opacity = 0
+    original.style.opacity = 0.5
     moveClone()
 
 }
@@ -42,9 +42,12 @@ function moveClone() {
         let localX = SvgXY[i].x
         let localY = SvgXY[i].y
         let HalfWidth = getWidth(svgArray[i])/2
-        let HalfHeight = getHeight(svgArray[i])/2
-        svgArray[i].setAttribute("x", ((localX-cameraX)*zoom)+250-HalfWidth-5)
-        svgArray[i].setAttribute("y", ((localY - cameraY) * zoom) + 250 - HalfHeight - 5)
+        let HalfHeight = getHeight(svgArray[i]) / 2
+        let g = svgArray[i].getElementsByTagName("g")
+        g[0].setAttribute("transform", "scale("+zoom+")")
+        svgArray[i].setAttribute("x", ((localX - cameraX) * zoom) + 250 - HalfWidth*zoom - 5*zoom)
+        svgArray[i].setAttribute("y", ((localY - cameraY) * zoom) + 250 - HalfHeight*zoom - 5*zoom)
+        // svgArray[i].setAttribute("transform", "scale(3)");
     }
 }
 
@@ -117,6 +120,9 @@ const zoomElem = document.getElementById('zoom');
 zoomElem.addEventListener('input', zoomOnChange);
 
 function zoomOnChange(e) {
-    zoom = Number(e.target.value)
+    zoom = clamp(Number(e.target.value),0.1,6)
     moveClone()
+}
+function clamp(value, min, max) {
+    return Math.min(Math.max(value, min), max);
 }
