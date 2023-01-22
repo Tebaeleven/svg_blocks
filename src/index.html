@@ -10,12 +10,13 @@
     
 <svg id="svg" width="500" height="500"
     style="border-width: thick; border-color: #EEE; border-style: solid; display: block; margin: auto;">
-    <svg id="rect" x="0" y="0" >
-        <g transform="scale(1)">
+    <svg  id="rect" x="0" y="0" >
+        <g transform="">
 
-        <rect  x="10" y="10" width="80" height="30" rx="10" ry="10" fill="#e74c3c" stroke="red" stroke-width="5" />
+        <rect  x="5" y="5" width="60" height="30" rx="10" ry="10" fill="#e74c3c" stroke="red" stroke-width="5" />
         <!-- <foreignObject x="20" y="12" width="30" height="150">
             <input type="text" id="input-size" value="名刺" style="background-color:transparent;border: none; outline: none;">
+        translate(0, 0) scale(1)
         </foreignObject> -->
         </g>
     </svg>
@@ -47,7 +48,10 @@
 </body>
 <style>
 
-
+svg{
+    padding: 0;
+    margin: 0;
+}
 
 </style>
 </html>
