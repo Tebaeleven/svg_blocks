@@ -134,7 +134,8 @@ function clamp(value, min, max) {
 function updateEventListeners() {
     svgArray.forEach(function (clone, index) {
         clone.addEventListener("mousedown", function (event) {
-            event.stopPropagation();
+            event.stopPropagation(); //背景がクリックされたと認識されないように伝播を切断
+            bringToFront(this)
             // ドラッグ開始時のマウス位置
             var startX = event.clientX;
             var startY = event.clientY;
@@ -165,7 +166,11 @@ function updateEventListeners() {
                 document.removeEventListener("mousemove", moveElement);
                 document.removeEventListener("mouseup", stopDrag);
             }
-            // alert("clone clicked!" + index);
+            function bringToFront(svg) {
+                var parent = svg.parentNode;
+                parent.removeChild(svg);
+                parent.appendChild(svg);
+            }
         });
     });
 }
@@ -213,8 +218,6 @@ document.addEventListener("mousewheel", function (event) {
     delta = clamp(delta, -deltaLimit, deltaLimit);
     zoom += delta * zoom / 2
     zoom = clamp(Number(zoom), 0.1, 5)
-
-    console.log(zoom)
     moveClone()
 });
 
