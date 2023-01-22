@@ -218,8 +218,16 @@ document.addEventListener("mousewheel", function (event) {
     moveClone()
 });
 
+let addButton = document.getElementById("add_btn")
+addButton.addEventListener("click", onClickHandler);
 function onClickHandler(event) {
     makeClone(getRandomArbitrary(-drawArea, drawArea), getRandomArbitrary(-drawArea, drawArea))
 }
-let add = document.getElementById("add_btn")
-add.addEventListener("click", onClickHandler);
+
+let resetXYButton = document.getElementById("reset")
+resetXYButton.addEventListener("click", resetHandler);
+function resetHandler() {
+    cameraX = 0
+    cameraY = 0
+    moveClone()
+}
