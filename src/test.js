@@ -191,6 +191,7 @@ function updateEventListeners() {
                                 //     moveClone()
                                 // }
                             }
+
                         }
                     }
                 })
@@ -224,11 +225,9 @@ function updateEventListeners() {
                 function moveRecursive(index, counter) {
                     if (typeof SvgXY[index].postBlock === "number") {
                         counter++;
-
                         var postIndex = Number(SvgXY[index].postBlock);
                         SvgXY[postIndex].x = newX;
                         SvgXY[postIndex].y = newY +counter*55;
-                        console.log(postIndex)
                         moveRecursive(postIndex, counter);
                     }
                 }
@@ -240,17 +239,6 @@ function updateEventListeners() {
                 //     console.log(postBlock)
                 // }
                 // console.log(postBlock)
-
-                SvgXY.forEach(function (svgClone, cloneIndex) {
-                    if (typeof SvgXY[cloneIndex].postBlock === "number") {
-                        var postIndex = Number(SvgXY[cloneIndex].postBlock);
-                        SvgXY[postIndex].postBlock = null;
-                        SvgXY[cloneIndex].postBlock = null;
-                    }
-                    if (typeof SvgXY[cloneIndex].preBlock === "number") {
-                        SvgXY[cloneIndex].preBlock = null;
-                    }
-                });
 
                 moveClone();
             }
@@ -267,7 +255,19 @@ function updateEventListeners() {
         });
     });
 }
-
+svgArray.forEach(function (clone, index) {
+    clone.addEventListener("mouseup", function (event) {
+        SvgXY.forEach(function (svgClone, cloneIndex) {
+            if (typeof SvgXY[cloneIndex].postBlock === "number") {
+                // SvgXY[postIndex].postBlock = null;
+                SvgXY[cloneIndex].postBlock = null;
+            }
+            if (typeof SvgXY[cloneIndex].preBlock === "number") {
+                SvgXY[cloneIndex].preBlock = null;
+            }
+        });
+    });
+});
 
 svg.addEventListener("mousedown", function (event) {
     // ドラッグ開始時のマウス位置
