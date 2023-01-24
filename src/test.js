@@ -79,17 +79,11 @@ function updateEventListeners() {
         clone.addEventListener("mousedown", function (event) {
             event.stopPropagation(); //背景がクリックされたと認識されないように伝播を切断
             bringToFront(this)
-            // ドラッグ開始時のマウス位置
-            var startX = event.clientX;
-            var startY = event.clientY;
-            var elementX = SvgXY[index].x;
-            var elementY = SvgXY[index].y;
 
             document.addEventListener("mousemove", moveElement);
             document.addEventListener("mouseup", stopDrag);
 
             function moveElement(event) {
-
                 let dragIndex = index
                 // let cloneIndex=0
                 svgArray.forEach(function (svgClone, cloneIndex) {
@@ -128,6 +122,12 @@ function updateEventListeners() {
                         }
                     }
                 })
+
+                // ドラッグ開始時のマウス位置
+                var startX = event.clientX;
+                var startY = event.clientY;
+                var elementX = SvgXY[index].x;
+                var elementY = SvgXY[index].y;
                 // 現在のマウス位置
                 var currentX = event.clientX;
                 var currentY = event.clientY;
@@ -164,14 +164,6 @@ function updateEventListeners() {
                     }
                 }
                 moveRecursive(index,0)
-                // // moveElement関数内で呼び出す
-                // moveRecursive(index);
-                // for (let i = 0; i < 2; i++) {
-                //     let postBlock = SvgXY[index].postBlock
-                //     console.log(postBlock)
-                // }
-                // console.log(postBlock)
-
                 moveClone();
             }
             function stopDrag() {
