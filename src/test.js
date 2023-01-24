@@ -1,5 +1,4 @@
 let svg = document.getElementById("svg")
-// 要素を取得
 var original = document.getElementById("rect");
 
 let zoom = 1
@@ -64,24 +63,7 @@ function moveClone() {
     }
 }
 
-function getWidth(clone) {
-    let rect = clone.getElementsByTagName("rect")
-    let width = rect[0].getAttribute("width")
-    return Number(width)
-}
-function getHeight(clone) {
-    let rect = clone.getElementsByTagName("rect")
-    let height = rect[0].getAttribute("height")
-    return Number(height)
-}
-function setWidth(clone, width) {
-    let rect = clone.getElementsByTagName("rect")
-    rect[0].setAttribute("width", width)
-}
-function setHeight(clone, height) {
-    let rect = clone.getElementsByTagName("rect")
-    rect[0].setAttribute("height", height)
-}
+
 // const zoomElem = document.getElementById('zoom');
 // zoomElem.addEventListener('input', zoomOnChange);
 
@@ -91,55 +73,7 @@ function setHeight(clone, height) {
 //     moveClone()
 // }
 
-//TODO 拡大縮小を原点を中央にしてできるようにする
-//TODO スクロールを原点を中央にしてできるようにする
-//TODO ドラッグ、ブロックの吸着機能追加
 
-function drawXYAxis() {
-    // X軸の描画
-    var xAxis = document.createElementNS("http://www.w3.org/2000/svg", "line");
-    xAxis.setAttribute("x1", "0");
-    xAxis.setAttribute("y1", svg.getAttribute("height") / 2);
-    xAxis.setAttribute("x2", svg.getAttribute("width"));
-    xAxis.setAttribute("y2", svg.getAttribute("height") / 2);
-    xAxis.setAttribute("stroke", "blue");
-    xAxis.setAttribute("stroke-width", "2");
-    svg.appendChild(xAxis);
-
-    // Y軸の描画
-    var yAxis = document.createElementNS("http://www.w3.org/2000/svg", "line");
-    yAxis.setAttribute("x1", svg.getAttribute("width") / 2);
-    yAxis.setAttribute("y1", "0");
-    yAxis.setAttribute("x2", svg.getAttribute("width") / 2);
-    yAxis.setAttribute("y2", svg.getAttribute("height"));
-    yAxis.setAttribute("stroke", "red");
-    yAxis.setAttribute("stroke-width", "2");
-    svg.appendChild(yAxis);
-}
-
-function getRandomArbitrary(min, max) {
-    return Math.random() * (max - min) + min;
-}
-
-const inputElem = document.getElementById('x');
-inputElem.addEventListener('input', rangeOnChange);
-
-function rangeOnChange(e) {
-    cameraX = Number(e.target.value)
-    console.log(cameraX)
-    moveClone()
-}
-const zoomElem = document.getElementById('zoom');
-zoomElem.addEventListener('input', zoomOnChange);
-
-function zoomOnChange(e) {
-    zoom = clamp(Number(e.target.value), 0.1, 5)
-    moveClone()
-}
-function clamp(value, min, max) {
-    return Math.min(Math.max(value, min), max);
-}
-var dd = false
 function updateEventListeners() {
     svgArray.forEach(function (clone, index) {
         clone.addEventListener("mousedown", function (event) {
@@ -191,11 +125,9 @@ function updateEventListeners() {
                                 //     moveClone()
                                 // }
                             }
-
                         }
                     }
                 })
-
                 // 現在のマウス位置
                 var currentX = event.clientX;
                 var currentY = event.clientY;
@@ -243,7 +175,6 @@ function updateEventListeners() {
                 moveClone();
             }
             function stopDrag() {
-
                 document.removeEventListener("mousemove", moveElement);
                 document.removeEventListener("mouseup", stopDrag);
             }
@@ -352,22 +283,71 @@ document.addEventListener("mousewheel", function (event) {
     moveClone()
 });
 
-let addButton = document.getElementById("add_btn")
-addButton.addEventListener("click", onClickHandler);
-function onClickHandler(event) {
+document.getElementById("add_btn").addEventListener("click", function () {
     makeClone(getRandomArbitrary(-drawArea, drawArea), getRandomArbitrary(-drawArea, drawArea))
-}
-
-let resetXYButton = document.getElementById("reset")
-resetXYButton.addEventListener("click", resetHandler);
-function resetHandler() {
+});
+document.getElementById("reset").addEventListener("click", function() {
     cameraX = 0
     cameraY = 0
     moveClone()
-}
-let indexButton = document.getElementById("index")
-indexButton.addEventListener("click", onClickHandler);
-function onClickHandler(event) {
+});
+document.getElementById("index").addEventListener("click",function() {
     cloneIndex += 1
     console.log(cloneIndex)
+});
+document.getElementById('zoom').addEventListener('input',function zoomOnChange(e) {
+        zoom = clamp(Number(e.target.value), 0.1, 5)
+        moveClone()
+});
+document.getElementById('x').addEventListener('input', function rangeOnChange(e) {
+    cameraX = Number(e.target.value)
+    console.log(cameraX)
+    moveClone()
+});
+
+function getRandomArbitrary(min, max) {
+    return Math.random() * (max - min) + min;
+}
+function clamp(value, min, max) {
+    return Math.min(Math.max(value, min), max);
+}
+function getWidth(clone) {
+    let rect = clone.getElementsByTagName("rect")
+    let width = rect[0].getAttribute("width")
+    return Number(width)
+}
+function getHeight(clone) {
+    let rect = clone.getElementsByTagName("rect")
+    let height = rect[0].getAttribute("height")
+    return Number(height)
+}
+function setWidth(clone, width) {
+    let rect = clone.getElementsByTagName("rect")
+    rect[0].setAttribute("width", width)
+}
+function setHeight(clone, height) {
+    let rect = clone.getElementsByTagName("rect")
+    rect[0].setAttribute("height", height)
+}
+
+function drawXYAxis() {
+    // X軸の描画
+    var xAxis = document.createElementNS("http://www.w3.org/2000/svg", "line");
+    xAxis.setAttribute("x1", "0");
+    xAxis.setAttribute("y1", svg.getAttribute("height") / 2);
+    xAxis.setAttribute("x2", svg.getAttribute("width"));
+    xAxis.setAttribute("y2", svg.getAttribute("height") / 2);
+    xAxis.setAttribute("stroke", "blue");
+    xAxis.setAttribute("stroke-width", "2");
+    svg.appendChild(xAxis);
+
+    // Y軸の描画
+    var yAxis = document.createElementNS("http://www.w3.org/2000/svg", "line");
+    yAxis.setAttribute("x1", svg.getAttribute("width") / 2);
+    yAxis.setAttribute("y1", "0");
+    yAxis.setAttribute("x2", svg.getAttribute("width") / 2);
+    yAxis.setAttribute("y2", svg.getAttribute("height"));
+    yAxis.setAttribute("stroke", "red");
+    yAxis.setAttribute("stroke-width", "2");
+    svg.appendChild(yAxis);
 }
