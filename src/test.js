@@ -1,5 +1,6 @@
 let svg = document.getElementById("svg")
-var original = document.getElementById("rect");
+var originalRect = document.getElementById("rect");
+var originalConnect = document.getElementById("connect");
 
 let zoom = 1
 let cameraX = 0
@@ -7,6 +8,8 @@ let cameraY = 0
 let svgArray = []
 let SvgXY = []
 let drawArea = 200
+let groupBlocks = []
+let cloneCount = 0
 
 // for (let i = 0; i <200; i++) {
 //     makeClone(getRandomArbitrary(-drawArea, drawArea), getRandomArbitrary(-drawArea, drawArea))
@@ -19,8 +22,9 @@ makeClone(0, 200)
 makeClone(200, 200)
 
 function makeClone(x, y) {
-    original.style.opacity = 1
-    var clone = original.cloneNode(true);
+    originalRect.style.opacity = 1
+    originalConnect.style.display = "none";
+    var clone = originalRect.cloneNode(true);
     // setWidth(clone, getRandomArbitrary(50, 100))
     // setHeight(clone, getRandomArbitrary(50, 100))
     // console.log(clone)
@@ -34,25 +38,27 @@ function makeClone(x, y) {
     height /= 2
     clone.setAttribute("x", x)
     clone.setAttribute("y", y)
-    SvgXY.push({ x: x, y: y, preBlock: null, postBlock: null, connect: null });
+    SvgXY.push({ idx: cloneCount, x: x, y: y, preBlock: null, postBlock: null, connect: null });
+    cloneCount++;
+
     svgArray.push(clone);
-    original.parentNode.appendChild(clone);
-    original.style.opacity = 0.5
+    originalRect.parentNode.appendChild(clone);
+    originalRect.style.opacity = 0.5
     updateEventListeners();
     moveClone()
 }
 
 function moveClone() {
     for (let i = 0; i < svgArray.length; ++i) {
+        // SvgXY[i].idx = i
         let localX = SvgXY[i].x
         let localY = SvgXY[i].y
         let HalfWidth = getWidth(svgArray[i]) / 2
         let HalfHeight = getHeight(svgArray[i]) / 2
         let g = svgArray[i].getElementsByTagName("g")
         g[0].setAttribute("transform", "scale(" + zoom + ")")
-        var text = svgArray[i].getElementById("dummy");
-
-        text.textContent = i + "_⬆️" + SvgXY[i].preBlock + "⬇️" + SvgXY[i].postBlock;
+        svgArray[i].getElementById("dummy").textContent = i + "_⬆️" + SvgXY[i].preBlock + "⬇️" + SvgXY[i].postBlock;
+        svgArray[i].getElementById("xy").textContent = "x:" + SvgXY[i].x + "y:" + SvgXY[i].y
         // var upText = svgArray[i].getElementById("up");
         // upText.textContent = (typeof SvgXY[i].preBlock === "object" ? "null" : SvgXY[i].preBlock);
         // var bottomText = svgArray[i].getElementById("bottom");
@@ -79,55 +85,22 @@ function updateEventListeners() {
         clone.addEventListener("mousedown", function (event) {
             event.stopPropagation(); //背景がクリックされたと認識されないように伝播を切断
             bringToFront(this)
+            // ドラッグ開始時のマウス位置
+            var startX = event.clientX;
+            var startY = event.clientY;
+            var elementX = SvgXY[index].x;
+            var elementY = SvgXY[index].y;
 
             document.addEventListener("mousemove", moveElement);
             document.addEventListener("mouseup", stopDrag);
 
             function moveElement(event) {
-                let dragIndex = index
-                // let cloneIndex=0
-                svgArray.forEach(function (svgClone, cloneIndex) {
-                    if (cloneIndex === dragIndex) {
-                    } else {
-                        document.addEventListener("mouseup", connectBlock);
-                        function connectBlock() {
-                            if (cloneIndex !== dragIndex) {
-                                canConnect = connect(index, cloneIndex)
-                                let cloneX = SvgXY[cloneIndex].x
-                                let cloneY = SvgXY[cloneIndex].y
-                                if (canConnect === "bottom") {
-                                    SvgXY[dragIndex].x = cloneX
-                                    SvgXY[dragIndex].y = cloneY + 55
-                                    SvgXY[cloneIndex].postBlock = dragIndex
-                                    SvgXY[dragIndex].preBlock = cloneIndex
-                                    moveClone()
-                                }
-                                if (canConnect === "top") {
-                                    SvgXY[index].x = cloneX
-                                    SvgXY[index].y = cloneY - 50
-                                    SvgXY[cloneIndex].preBlock = index
-                                    moveClone()
-                                }
-                                // if (canConnect === "left") {
-                                //     SvgXY[index].x = cloneX - 180
-                                //     SvgXY[index].y = cloneY
-                                //     moveClone()
-                                // }
-                                // if (canConnect === "right") {
-                                //     SvgXY[index].x = cloneX + 180
-                                //     SvgXY[index].y = cloneY
-                                //     moveClone()
-                                // }
-                            }
-                        }
-                    }
-                })
+                
+                /**
+                 * ブロックの接続をする
+                 */
+                connectBlock()
 
-                // ドラッグ開始時のマウス位置
-                var startX = event.clientX;
-                var startY = event.clientY;
-                var elementX = SvgXY[index].x;
-                var elementY = SvgXY[index].y;
                 // 現在のマウス位置
                 var currentX = event.clientX;
                 var currentY = event.clientY;
@@ -142,29 +115,57 @@ function updateEventListeners() {
                 SvgXY[index].x = newX;
                 SvgXY[index].y = newY;
                 
-                // if (typeof SvgXY[0].postBlock === "number") {
-                //     console.log("1つ目")
-                //     let postBlock = SvgXY[0].postBlock
-                //     SvgXY[postBlock].x = newX;
-                //     SvgXY[postBlock].y = newY + 55;
-                // }
-                // if (typeof SvgXY[1].postBlock === "number") {
-                //     console.log("2つ目")
-                //     let postBlock = SvgXY[1].postBlock
-                //     SvgXY[postBlock].x = newX;
-                //     SvgXY[postBlock].y = newY + 110;
-                // }
-                function moveRecursive(index, counter) {
+                /**
+                 * 
+                 * 下にくっついているブロックを見つける
+                 */
+
+
+                makeGroup()
+                function makeGroup() {
+                    groupBlocks = []
+                    groupBlocks.push(SvgXY[index])
                     if (typeof SvgXY[index].postBlock === "number") {
-                        counter++;
-                        var postIndex = Number(SvgXY[index].postBlock);
-                        SvgXY[postIndex].x = newX;
-                        SvgXY[postIndex].y = newY +counter*55;
-                        moveRecursive(postIndex, counter);
+                        //postgBlockがnullまで（下にブロックがない）まで繰り返す
+
+                        //現在ドラッグ中のpostBlock
+                        let postIndex = Number(SvgXY[index].postBlock)
+                        groupBlocks.push(SvgXY[postIndex])
+
+                        //現在ドラッグ中のpostBlockがあるなら
+                        if (typeof SvgXY[postIndex].postBlock === "number") {
+
+                            while (typeof SvgXY[postIndex].postBlock === "number") {
+                                console.log("実行")
+                                postIndex = Number(SvgXY[postIndex].postBlock)
+                                groupBlocks.push(SvgXY[postIndex])
+                                console.log(postIndex)
+                            }
+                        }
                     }
                 }
-                moveRecursive(index,0)
+
+                console.log(groupBlocks)
+
+
+                // function moveRecursive(index, counter) {
+                //     if (typeof SvgXY[index].postBlock === "number") {
+                //         counter++;
+                //         var postIndex = Number(SvgXY[index].postBlock);
+                //         SvgXY[postIndex].x = newX;
+                //         SvgXY[postIndex].y = newY +counter*55;
+                //         moveRecursive(postIndex, counter);
+                //     }
+                // }
+                // moveRecursive(index, 0)
                 moveClone();
+                groupBlocks.forEach(function (groupBlock, index) {
+                    console.log(groupBlocks[index].idx)
+                    let moveBlockIndex = groupBlocks[index].idx
+                    SvgXY[moveBlockIndex].x = newX;
+                    SvgXY[moveBlockIndex].y = newY + index*55;
+                    // SvgXY[moveBlockIndex].x = newX;
+                })
             }
             function stopDrag() {
                 document.removeEventListener("mousemove", moveElement);
@@ -174,6 +175,49 @@ function updateEventListeners() {
                 var parent = svg.parentNode;
                 parent.removeChild(svg);
                 parent.appendChild(svg);
+            }
+
+            function connectBlock() {
+
+                let dragIndex = index
+                svgArray.forEach(function (svgClone, cloneIndex) {
+                    if (cloneIndex === dragIndex) {
+                    } else {
+                        //TODO connect関数にforeachを持っていって、接続先を一つだけにする
+                        document.addEventListener("mouseup", beginConnect);
+                        function beginConnect() {
+                            if (cloneIndex !== dragIndex) {
+                                canConnect = connect(index, cloneIndex)
+                                let cloneX = SvgXY[cloneIndex].x
+                                let cloneY = SvgXY[cloneIndex].y
+                                if (canConnect === "bottom") {
+                                    SvgXY[dragIndex].x = cloneX
+                                    SvgXY[dragIndex].y = cloneY + 55
+                                    SvgXY[cloneIndex].postBlock = dragIndex
+                                    SvgXY[dragIndex].preBlock = cloneIndex
+                                    moveClone()
+                                }
+                                // if (canConnect === "top") {
+                                //     SvgXY[index].x = cloneX
+                                //     SvgXY[index].y = cloneY - 50
+                                //     SvgXY[cloneIndex].preBlock = index
+                                //     moveClone()
+                                // }
+                                // if (canConnect === "left") {
+                                //     SvgXY[index].x = cloneX - 180
+                                //     SvgXY[index].y = cloneY
+                                //     moveClone()
+                                // }
+                                // if (canConnect === "right") {
+                                //     SvgXY[index].x = cloneX + 180
+                                //     SvgXY[index].y = cloneY
+                                //     moveClone()
+                                // }
+                            }
+                        }
+                    }
+                })
+                console.log("取得")
             }
         });
     });
@@ -247,6 +291,7 @@ function connect(draggingIndex, cloneIndex) {
     let rightY = Math.abs(cloneY - draggingY)
     let right = rightX <= margin && rightY <= margin
 
+    // SvgXY[draggingIndex][].getElementById("connect").style.display = "none"
     let result = false
     // if (left) {
     //     result="left"
@@ -254,15 +299,23 @@ function connect(draggingIndex, cloneIndex) {
     // if (right) {
     //     result = "right"
     // }
+    resetColor(cloneIndex)
+
     if (bottom) {
         result = "bottom"
+        changeColor(cloneIndex)
     }
     // if (top) {
     //     result = "top"
     // }
     // console.log("x:" + distanceX + " y:" + distanceY)
-
     return result
+}
+function changeColor(index) {
+    svgArray[index].getElementById("connect").style.display = "block";
+}
+function resetColor(index){
+    svgArray[index].getElementById("connect").style.display = "none";
 }
 document.addEventListener("mousewheel", function (event) {
     let delta = -event.deltaY

@@ -13,13 +13,18 @@
     <svg  id="rect" x="0" y="0"  >
         <g transform="scale(1)"width="10">
 
-        <rect  x="5" y="5" width="170" height="50" rx="10" ry="10" fill="#e74c3c" stroke="red" stroke-width="5" />
-        <foreignObject x="130" y="15" width="35" height="30" >
+        <rect id="block" x="5" y="5" width="260" height="50" rx="10" ry="10" fill="#e74c3c" stroke="red" stroke-width="5" />
+        <foreignObject x="125" y="15" width="35" height="30" >
             <input type="text" id="input-size" value="変数">
         </foreignObject>
         <text id="dummy" x="20" y="35" font-size="15">
             ダミーテキスト
         </text>
+        <text id="xy" x="170" y="35" font-size="15">
+            座標
+        </text>
+        <rect id="connect" x="5" y="65" width="360" height="10" rx="10" ry="10" fill="yellow" stroke="orange" stroke-width="5" />
+
         <!-- <text id="up"x="75" y="15" font-size="15" style="fill:black;font-weight:800;">
             test
         </text>
