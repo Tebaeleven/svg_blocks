@@ -18,10 +18,10 @@ class Block{
         this.newX = 0
         this.newY = 0
         let self = this
-        this.moveX(x)
-        this.moveY(y)
+        
+        this.moveXY(x,y)
 
-        this.element.addEventListener("mousedown", function (e) {
+        this.element.addEventListener("mousedown", function () {
             console.log("マウスダウン")
             self.isDrag = true
             self.bringToFront()
@@ -53,8 +53,7 @@ class Block{
     moveBlock(dx, dy) {
         this.x = this.x - dx
         this.y = this.y - dy
-        this.moveX(this.x)
-        this.moveY(this.y)
+        this.moveXY(this.x, this.y)
     }
     changeText() {
         // console.log(this.element)
@@ -64,11 +63,8 @@ class Block{
     appendTo(parentElement) {
         parentElement.appendChild(this.element);
     }
-
-    moveX(x) {
+    moveXY(x,y) {
         this.element.setAttribute("x", this.calculateX(x))
-    }
-    moveY(y) {
         this.element.setAttribute("y", this.calculateY(y))
     }
     calculateX(x) {
