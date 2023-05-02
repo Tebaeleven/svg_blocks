@@ -109,7 +109,8 @@ function updateEventListeners() {
                  * 下にくっついているブロックを見つける
                  */
                 makeGroup()
-                moveGroup(newX, newY)
+                // moveGroup(newX, newY)
+                moveClone()
                 canConnect(index)
 
             }
@@ -123,7 +124,7 @@ function updateEventListeners() {
                 parent.removeChild(svg);
                 parent.appendChild(svg);
             }
-            function moveGroup(newX,newY) {
+            function moveGroup(newX, newY) {
                 groupBlocks.forEach(function (groupBlock, index) {
                     // console.log(groupBlocks[index].idx)
                     let moveBlockIndex = groupBlocks[index].idx
@@ -160,17 +161,17 @@ function updateEventListeners() {
                     //上のブロック
                     let cloneX = SvgXY[cloneIndex].x
                     let cloneY = SvgXY[cloneIndex].y
-                    //ドラッグしていたブロックを移動
-                    SvgXY[dragIndex].x = cloneX
-                    SvgXY[dragIndex].y = cloneY + 55
+                    // //ドラッグしていたブロックを移動
+                    // SvgXY[dragIndex].x = cloneX
+                    // SvgXY[dragIndex].y = cloneY + 55
 
                     let rootPost = SvgXY[cloneIndex].postBlock
                     console.log("root")
                     console.log(rootPost)
-                    if (typeof rootPost==="number") {
-                        
-                    if (typeof SvgXY[rootPost].preBlock==="number"){
-                        SvgXY[rootPost].preBlock = dragIndex
+                    if (typeof rootPost === "number") {
+
+                        if (typeof SvgXY[rootPost].preBlock === "number") {
+                            SvgXY[rootPost].preBlock = dragIndex
                         }
                     }
 
@@ -232,51 +233,41 @@ svg.addEventListener("mousedown", function (event) {
     // alert("clone clicked!" + index);
 });
 function connect(draggingIndex) {
-    let return_results=0
-    let return_cloneIndex=0
+    let return_results = 0
+    let return_cloneIndex = 0
     svgArray.forEach(function (a, cloneIndex) {
         if (cloneIndex !== draggingIndex) {
-        // ドラッグしているクローンの位置
-        let margin = 50
-        var draggingX = SvgXY[draggingIndex].x
-        var draggingY = SvgXY[draggingIndex].y
-        let cloneX = SvgXY[cloneIndex].x
-        let cloneY = SvgXY[cloneIndex].y
+            // ドラッグしているクローンの位置
+            let margin = 50
+            var draggingX = SvgXY[draggingIndex].x
+            var draggingY = SvgXY[draggingIndex].y
+            let cloneX = SvgXY[cloneIndex].x
+            let cloneY = SvgXY[cloneIndex].y
 
-        let bottomX = Math.abs(cloneX - draggingX)
-        let bottomY = Math.abs(cloneY + 40 - draggingY)
-        let bottom = bottomX <= margin && bottomY <= margin
+            let bottomX = Math.abs(cloneX - draggingX)
+            let bottomY = Math.abs(cloneY + 40 - draggingY)
+            let bottom = bottomX <= margin && bottomY <= margin
 
-        let leftX = Math.abs(cloneX - 170 - draggingX)
-        let leftY = Math.abs(cloneY - draggingY)
-        let left = leftX <= margin && leftY <= margin
+            let topX = Math.abs(cloneX - draggingX)
+            let topY = Math.abs(cloneY - 40 - draggingY)
+            let top = topX <= margin && topY <= margin
 
-        let topX = Math.abs(cloneX - draggingX)
-        let topY = Math.abs(cloneY - 40 - draggingY)
-        let top = topX <= margin && topY <= margin
 
-        let rightX = Math.abs(cloneX + 170 - draggingX)
-        let rightY = Math.abs(cloneY - draggingY)
-        let right = rightX <= margin && rightY <= margin
+            let result = false
 
-        let result = false
+            if (bottom) {
+                result = "bottom"
+                return_results = result
+                return_cloneIndex = cloneIndex
+            }
 
-        if (bottom) {
-            result = "bottom"
-            return_results = result
-            return_cloneIndex = cloneIndex
-        }
-        // if (top) {
-        //     result = "top"
-        // }
-        // console.log("x:" + distanceX + " y:" + distanceY)
         }
     })
     return [return_results, return_cloneIndex]
 
 }
 function canConnect(draggingIndex) {
-    let connectBlock=[]
+    let connectBlock = []
     for (let i = 0; i < svgArray.length; i++) {
         if (i !== draggingIndex) {
             let margin = 50
@@ -317,7 +308,7 @@ function changeColor(index) {
     svgArray[index].getElementById("connect").style.display = "block";
 }
 function resetColor() {
-    svgArray.forEach(function (a,b) {
+    svgArray.forEach(function (a, b) {
         svgArray[b].getElementById("connect").style.display = "none";
 
     })
