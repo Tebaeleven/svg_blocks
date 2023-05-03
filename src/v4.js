@@ -9,31 +9,37 @@ console.log(BlockDom)
 let globalCameraX = 0
 let globalCameraY = 0
 let globalZoom = 1
+let globalIsDrag = false
 
 class Block{
-    constructor(x, y,width,height) {
-        this.element = BlockDom.cloneNode(true);
+    static counter=0
+    constructor(x, y, width, height, fill, stroke) {
         this.x = x
-        this.y = y        
-        this.startDragX = 0
-        this.startDragY = 0
+        this.y = y
+        this.id = Block.counter++
+        this.element = BlockDom.cloneNode(true);
+        this.rect = this.element.getElementsByTagName("rect")
+        this.connect = this.element.getElementById("connect")
+        this.connect.style.display = "none";
+
+        this.isTopBlock=false
+        this.parent = null
+        this.children = null
         this.isDrag = false
-        this.newX = 0
-        this.newY = 0
         let self = this
 
-        let rect = this.element.getElementsByTagName("rect")
-        rect[0].setAttribute("width", width)
+        this.rect[0].setAttribute("width", width)
+        this.rect[0].setAttribute("height", height)
+        this.rect[0].setAttribute("fill", fill)
+        this.rect[0].setAttribute("stroke", stroke)
 
         this.blockWidth = (() => {
-            let rect = self.element.getElementsByTagName("rect")
-            let width = rect[0].getAttribute("width")
+            let width = this.rect[0].getAttribute("width")
             return Number(width)
         })();
         console.log("ブロックの幅", this.blockWidth)
         this.blockHeight = (() => {
-            let rect = self.element.getElementsByTagName("rect")
-            let height = rect[0].getAttribute("height")
+            let height = this.rect[0].getAttribute("height")
             return Number(height)
         })()
         console.log("ブロックの高さ", this.blockHeight)
@@ -44,33 +50,38 @@ class Block{
 
         this.element.addEventListener("mousedown", function (e) {
             e.stopPropagation()
+            globalIsDrag = true
             console.log("マウスダウン")
             self.isDrag = true
             self.bringToFront()
             self.changeText()
         })
 
+        let newX = 0
+        let newY = 0
         document.addEventListener("mousemove", function (e) {
             if (self.isDrag) {
-                self.startDragX = e.clientX
-                self.startDragY = e.clientY
-                let dx = self.newX - self.startDragX
-                let dy = self.newY - self.startDragY
+                let dx = newX - e.clientX
+                let dy = newY - e.clientY
                 self.moveBlock(dx, dy)
                 self.setTextXY()
             }
-            self.newX = e.clientX
-            self.newY = e.clientY
+            newX = e.clientX
+            newY = e.clientY
         })
         
         document.addEventListener("mouseup", function (e) {
             e.stopPropagation()
+            globalIsDrag = false
+            self.connect.style.display = "none"
             if (self.isDrag) {
                 console.log("終了")
                 self.isDrag = false
             }
+            self.changeText()
         })
     }
+
     setTextXY() {
         this.element.getElementById("xy").textContent = "x:" + Math.floor(this.x) + "y:" + Math.floor(this.y)
     }
@@ -84,10 +95,8 @@ class Block{
         this.moveXY(this.x, this.y)
     }
     changeText() {
-        // console.log(this.element)
-        this.element.getElementById("dummy").textContent="クリックされた"
+        this.element.getElementById("dummy").textContent = "ID:" + this.id + ", " + this.isDrag
     }
-    
     appendTo(parentElement) {
         parentElement.appendChild(this.element);
     }
@@ -112,48 +121,44 @@ class Block{
 }
 
 class Editor {
-    constructor(x, y,block) {
+    constructor(x, y, block) {
         this.element = svgArea
         this.cameraX = x
         this.cameraY = y
         this.block = block
         console.log(block)
-        this.startDragX = 0
-        this.startDragY = 0
-        this.isDrag = false
-        this.newX = 0
-        this.newY = 0
-        let self = this
 
+        this.isDrag = false
+
+        let self = this
         this.element.addEventListener("mousedown", function (e) {
             e.stopPropagation()
             console.log("エディタマウスダウン")
             self.isDrag = true
         })
-
+        let newX = 0
+        let newY = 0
         document.addEventListener("mousemove", function (e) {
             if (self.isDrag) {
-                self.startDragX = e.clientX
-                self.startDragY = e.clientY
-                let dx = self.newX - self.startDragX
-                let dy = self.newY - self.startDragY
+                let dx = newX - e.clientX
+                let dy = newY - e.clientY
                 self.cameraX = self.cameraX - dx / globalZoom
                 self.cameraY = self.cameraY - dy / globalZoom
-                console.log(self.cameraX, self.cameraY)
                 globalCameraX = self.cameraX
                 globalCameraY = self.cameraY
-                console.log(globalCameraX)
                 document.getElementById("camera_data").textContent = "camera_x: " + Math.floor(self.cameraX) + "camera_y: " + Math.floor(self.cameraY)
                 self.block.forEach(function (b) {
                     b.scrollBlock();
                 });
+
+            } else if (globalIsDrag) { //ブロックをドラッグしている時のみ
+                self.checkDistance()
             }
-            self.newX = e.clientX
-            self.newY = e.clientY
+            newX = e.clientX
+            newY = e.clientY
         })
         document.getElementById('zoom').addEventListener('input', function zoomOnChange(e) {
             globalZoom = Number(e.target.value)
-            console.log(globalZoom)
             self.block.forEach(function (b) {
                 b.scrollBlock();
             });
@@ -164,25 +169,82 @@ class Editor {
                 console.log("エディタ終了")
                 self.isDrag = false
             }
-
         })
     }
+    checkDistance() {
+        
+        let draggedBlock
+        this.block.forEach(block => {
+            if (block.isDrag) { //ドラッグされているブロックを見つける
+                draggedBlock=block
+            }
+        })
+
+        let nearBlock
+
+        let result
+        this.block.forEach(b => {
+            if (!b.isDrag) { //ドラッグされていないブロックを見つける
+                nearBlock = b
+                nearBlock.connect.style.display = "none"
+                let margin = 50
+                let rightX = Math.abs((draggedBlock.x - draggedBlock.blockWidth / 2) - (nearBlock.x + nearBlock.blockWidth / 2))
+                let rightY = Math.abs(draggedBlock.y - nearBlock.y)
+                let right = rightX < margin && rightY < margin
+                if (right) {
+                    result = nearBlock
+                }
+            }
+        })
+        if (result) {
+            result.connect.style.display = "block"
+        }
+
+        // let leftDistance = Math.abs((draggedBlock.x + draggedBlock.blockWidth / 2) - (nearBlock.x - nearBlock.blockWidth / 2))
+        // let bottomDistance = Math.abs((draggedBlock.y - draggedBlock.blockHeight / 2) - (nearBlock.y + nearBlock.blockHeight / 2))
+        // let topDistance = Math.abs((draggedBlock.y + draggedBlock.blockHeight / 2) - (nearBlock.y - nearBlock.blockHeight / 2))
+
+    }
 }
+
 let blocks = []
 
-for (let i = 0; i < 10; i++) {
+for (let i = 0; i < 3; i++) {
+    let value =1// Math.floor(Math.random() * 4) + 1;
+    let stroke, fill
+    switch (value) {
+        case 1:
+            stroke = "red"
+            fill = "#e74c3c"
+            break;
+        case 2:
+            stroke = "blue"
+            fill = "#5252ff"
+            break;
+        case 3:
+            stroke = "green"
+            fill = "#00c921"
+            break;
+        case 4:
+            stroke = "orange"
+            fill = "yellow"
+            break;
+        default:
+            stroke = "blue"
+            fill = "#5252ff"
+            break;
+    }
     blocks.push(
         new Block(
             getRandomArbitrary(-300, 300),
             getRandomArbitrary(-300, 300),
-            getRandomArbitrary(50, 300),
-            getRandomArbitrary(50, 300),
+            260,//getRandomArbitrary(100, 200),
+            50,//getRandomArbitrary(50, 50),
+            fill,
+            stroke,
         )
     )
 }
-// blocks.push(new Block(0, 200))
-// blocks.push(new Block(300, 200))
-// blocks.push(new Block(300, 0))
 
 blocks.forEach(function (block) {
     block.appendTo(svgArea)
@@ -199,20 +261,20 @@ function drawXYAxis() {
     // X軸の描画
     var xAxis = document.createElementNS("http://www.w3.org/2000/svg", "line");
     xAxis.setAttribute("x1", "0");
-    xAxis.setAttribute("y1", svg.getAttribute("height") / 2);
-    xAxis.setAttribute("x2", svg.getAttribute("width"));
-    xAxis.setAttribute("y2", svg.getAttribute("height") / 2);
+    xAxis.setAttribute("y1", svgArea.getAttribute("height") / 2);
+    xAxis.setAttribute("x2", svgArea.getAttribute("width"));
+    xAxis.setAttribute("y2", svgArea.getAttribute("height") / 2);
     xAxis.setAttribute("stroke", "blue");
     xAxis.setAttribute("stroke-width", "2");
-    svg.appendChild(xAxis);
+    svgArea.appendChild(xAxis);
 
     // Y軸の描画
     var yAxis = document.createElementNS("http://www.w3.org/2000/svg", "line");
-    yAxis.setAttribute("x1", svg.getAttribute("width") / 2);
+    yAxis.setAttribute("x1", svgArea.getAttribute("width") / 2);
     yAxis.setAttribute("y1", "0");
-    yAxis.setAttribute("x2", svg.getAttribute("width") / 2);
-    yAxis.setAttribute("y2", svg.getAttribute("height"));
+    yAxis.setAttribute("x2", svgArea.getAttribute("width") / 2);
+    yAxis.setAttribute("y2", svgArea.getAttribute("height"));
     yAxis.setAttribute("stroke", "red");
     yAxis.setAttribute("stroke-width", "2");
-    svg.appendChild(yAxis);
+    svgArea.appendChild(yAxis);
 }
