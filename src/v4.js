@@ -12,7 +12,7 @@ let globalZoom = 1
 let globalIsDrag = false
 
 class Block{
-    static counter=0
+    static counter = 0
     constructor(x, y, width, height, fill, stroke) {
         this.x = x
         this.y = y
@@ -95,7 +95,9 @@ class Block{
         this.moveXY(this.x, this.y)
     }
     changeText() {
-        this.element.getElementById("dummy").textContent = "ID:" + this.id + ", " + this.isDrag
+        this.element.getElementById("dummy").textContent = "ID:" + this.id + ", " 
+            + "↑" + this.parent
+            +"↓" + this.children
     }
     appendTo(parentElement) {
         parentElement.appendChild(this.element);
@@ -138,6 +140,8 @@ class Editor {
         })
         let newX = 0
         let newY = 0
+        let draggedBlock = false
+        let canConnectBlock=false
         document.addEventListener("mousemove", function (e) {
             if (self.isDrag) {
                 let dx = newX - e.clientX
@@ -150,9 +154,8 @@ class Editor {
                 self.block.forEach(function (b) {
                     b.scrollBlock();
                 });
-
-            } else if (globalIsDrag) { //ブロックをドラッグしている時のみ
-                self.checkDistance()
+            } else if (globalIsDrag) { //ブロックをドラッグしている時のみ動く
+                [draggedBlock, canConnectBlock] =self.isConnectBlock()
             }
             newX = e.clientX
             newY = e.clientY
@@ -164,25 +167,52 @@ class Editor {
             });
         });
         document.addEventListener("mouseup", function (e) {
-            e.stopPropagation()
-            if (self.isDrag) {
+            if (self.isDrag) { //エディタの処理
                 console.log("エディタ終了")
                 self.isDrag = false
+            } else { //ブロックのクリック処理終了時に実行
+                if (draggedBlock && canConnectBlock) { //接続できる状態だったら
+                    self.connectBlock(draggedBlock, canConnectBlock)
+                    console.log("接続先が見つかっていました", canConnectBlock)
+                } else {
+                    //接続解除
+                    self.deleteConnect(draggedBlock)
+                }
             }
         })
     }
-    checkDistance() {
-        
+    deleteConnect(draggedBlock) {
+        //ドラッグしたブロックの親から子を削除
+        this.block.forEach(item => {
+            if (item.id === draggedBlock.parent) {
+                item.children = null
+                item.changeText()
+                console.log
+            }
+        })
+        //ドラッグしたブロックの親を削除
+        draggedBlock.parent = null
+        draggedBlock.changeText()
+    }
+    connectBlock(draggedBlock, canConnectBlock) { //ブロックを接続する
+        draggedBlock.parent = canConnectBlock.id //ドラッグしたブロックの親を設定
+        canConnectBlock.children = draggedBlock.id //接続先の子を設定
+        //ブロックを移動させる
+        draggedBlock.x = canConnectBlock.x + canConnectBlock.blockWidth
+        draggedBlock.y = canConnectBlock.y
+        draggedBlock.scrollBlock(0,0)
+        draggedBlock.changeText()
+        canConnectBlock.changeText()
+    }
+    isConnectBlock() { //接続できるか判定
         let draggedBlock
         this.block.forEach(block => {
             if (block.isDrag) { //ドラッグされているブロックを見つける
                 draggedBlock=block
             }
         })
-
         let nearBlock
-
-        let result
+        let canConnect
         this.block.forEach(b => {
             if (!b.isDrag) { //ドラッグされていないブロックを見つける
                 nearBlock = b
@@ -192,56 +222,30 @@ class Editor {
                 let rightY = Math.abs(draggedBlock.y - nearBlock.y)
                 let right = rightX < margin && rightY < margin
                 if (right) {
-                    result = nearBlock
+                    canConnect = nearBlock
                 }
             }
         })
-        if (result) {
-            result.connect.style.display = "block"
+        if (canConnect) { //接続先が見つかった場合
+            canConnect.connect.style.display = "block"
+            return [draggedBlock, canConnect]
+        } else { //接続先がなかった場合
+            return [draggedBlock,false]
         }
-
-        // let leftDistance = Math.abs((draggedBlock.x + draggedBlock.blockWidth / 2) - (nearBlock.x - nearBlock.blockWidth / 2))
-        // let bottomDistance = Math.abs((draggedBlock.y - draggedBlock.blockHeight / 2) - (nearBlock.y + nearBlock.blockHeight / 2))
-        // let topDistance = Math.abs((draggedBlock.y + draggedBlock.blockHeight / 2) - (nearBlock.y - nearBlock.blockHeight / 2))
-
     }
 }
 
 let blocks = []
 
 for (let i = 0; i < 3; i++) {
-    let value =1// Math.floor(Math.random() * 4) + 1;
-    let stroke, fill
-    switch (value) {
-        case 1:
-            stroke = "red"
-            fill = "#e74c3c"
-            break;
-        case 2:
-            stroke = "blue"
-            fill = "#5252ff"
-            break;
-        case 3:
-            stroke = "green"
-            fill = "#00c921"
-            break;
-        case 4:
-            stroke = "orange"
-            fill = "yellow"
-            break;
-        default:
-            stroke = "blue"
-            fill = "#5252ff"
-            break;
-    }
     blocks.push(
         new Block(
             getRandomArbitrary(-300, 300),
             getRandomArbitrary(-300, 300),
             260,//getRandomArbitrary(100, 200),
             50,//getRandomArbitrary(50, 50),
-            fill,
-            stroke,
+            "#e74c3c",
+            "red",
         )
     )
 }
@@ -251,8 +255,6 @@ blocks.forEach(function (block) {
 })
 
 let myEditor = new Editor(0, 0, blocks)
-
-drawXYAxis()
 
 function getRandomArbitrary(min, max) {
     return Math.random() * (max - min) + min;
