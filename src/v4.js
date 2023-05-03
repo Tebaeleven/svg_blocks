@@ -1,13 +1,14 @@
 let svgArea = document.getElementById("svg")
 let BlockDom = document.getElementById("rect");
 const svgWidth=svgArea.clientWidth
-
+const svgHeight=svgArea.clientHeight
 console.log(svgArea)
 console.log(svgWidth)
 console.log(BlockDom)
 
 let globalCameraX = 0
 let globalCameraY = 0
+let globalZoom = 2
 
 class Block{
     constructor(x, y) {
@@ -33,7 +34,8 @@ class Block{
         })()
         console.log("ブロックの高さ", this.blockHeight)
 
-        this.moveXY(x,y)
+        this.moveXY(x, y)
+        this.setSize()
         this.setTextXY()
 
         this.element.addEventListener("mousedown", function (e) {
@@ -66,15 +68,15 @@ class Block{
         })
     }
     setTextXY() {
-        this.element.getElementById("xy").textContent = "x:" + this.x + "y:" + this.y
+        this.element.getElementById("xy").textContent = "x:" + Math.floor(this.x) + "y:" + Math.floor(this.y)
     }
     bringToFront() {
         svgArea.removeChild(this.element)
         svgArea.appendChild(this.element)
     }
     moveBlock(dx, dy) {
-        this.x = this.x - dx
-        this.y = this.y - dy
+        this.x = this.x - dx / globalZoom
+        this.y = this.y - dy / globalZoom
         this.moveXY(this.x, this.y)
     }
     changeText() {
@@ -90,13 +92,18 @@ class Block{
         this.element.setAttribute("y", this.calculateY(y))
     }
     calculateX(x) {
-        return (x + globalCameraX) + (svgWidth/2) - (this.blockWidth/2) - 5
+        return ((x + globalCameraX) * globalZoom) + (svgWidth / 2)  - (this.blockWidth / 2) * globalZoom - 5 * globalZoom
     }
     calculateY(y) {
-        return (y + globalCameraY) + (svgWidth/2) - (this.blockHeight/2) - 5
+        return ((y + globalCameraY) * globalZoom) + (svgHeight / 2)  - (this.blockHeight / 2) * globalZoom - 5 * globalZoom
     }
     scrollBlock() {
+        this.setSize()
         this.moveXY(this.x,this.y)
+    }
+    setSize() {
+        let g = this.element.getElementsByTagName("g")
+        g[0].setAttribute("transform", "scale(" + globalZoom + ")")
     }
 }
 
@@ -126,13 +133,13 @@ class Editor {
                 self.startDragY = e.clientY
                 let dx = self.newX - self.startDragX
                 let dy = self.newY - self.startDragY
-                self.cameraX = self.cameraX - dx
-                self.cameraY = self.cameraY - dy
+                self.cameraX = self.cameraX - dx / globalZoom
+                self.cameraY = self.cameraY - dy / globalZoom
                 console.log(self.cameraX, self.cameraY)
                 globalCameraX = self.cameraX
                 globalCameraY = self.cameraY
                 console.log(globalCameraX)
-                document.getElementById("camera_data").textContent = "camera_x: " + self.cameraX + "camera_y: " + self.cameraY
+                document.getElementById("camera_data").textContent = "camera_x: " + Math.floor(self.cameraX) + "camera_y: " + Math.floor(self.cameraY)
                 self.block.forEach(function (b) {
                     b.scrollBlock();
                 });
@@ -140,7 +147,13 @@ class Editor {
             self.newX = e.clientX
             self.newY = e.clientY
         })
-
+        document.getElementById('zoom').addEventListener('input', function zoomOnChange(e) {
+            globalZoom = Number(e.target.value)
+            console.log(globalZoom)
+            self.block.forEach(function (b) {
+                b.scrollBlock();
+            });
+        });
         document.addEventListener("mouseup", function (e) {
             e.stopPropagation()
             if (self.isDrag) {
@@ -153,13 +166,15 @@ class Editor {
 }
 let blocks = []
 
-let myBlock = new Block(0, 0)
-let myBlock2 = new Block(0, 200)
 
-blocks.push(myBlock)
-blocks.push(myBlock2)
-myBlock.appendTo(svgArea)
-myBlock2.appendTo(svgArea)
+blocks.push(new Block(0, 0))
+blocks.push(new Block(0, 200))
+blocks.push(new Block(300, 200))
+blocks.push(new Block(300, 0))
+
+blocks.forEach(function (block) {
+    block.appendTo(svgArea)
+})
 
 let myEditor = new Editor(0, 0, blocks)
 
