@@ -13,7 +13,6 @@
     <svg id="svg" width="500" height="500"
         style="border-width: thick; border-color: #EEE; border-style: solid; display: block; margin: auto;"
         onmousedown="" onmousemove="" onmouseup="">
-
         <svg id="rect" x="0" y="0">
             <g transform="scale(1)" width="10">
 
@@ -29,9 +28,11 @@
                     座標
                 </text>
             </g>
+
         </svg>
     </svg>
 
+    <p id="camera_data">camera_x:.camera_y:</p>
 
     <button id="add_btn">Add</button>
     <button id="reset">Reset_XY</button>
@@ -41,7 +42,6 @@
 
     🐢 <input id="x" type="range" min="-400" max="400" value="0" step="0.01"> 🐰
     👀 <input id="zoom" type="range" min="0.1" max="7" step="0.01" value="1"> 👀
-
 
     <script src="./v4.js"></script>
 </body>
