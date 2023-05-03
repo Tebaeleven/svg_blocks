@@ -8,10 +8,10 @@ console.log(BlockDom)
 
 let globalCameraX = 0
 let globalCameraY = 0
-let globalZoom = 2
+let globalZoom = 1
 
 class Block{
-    constructor(x, y) {
+    constructor(x, y,width,height) {
         this.element = BlockDom.cloneNode(true);
         this.x = x
         this.y = y        
@@ -21,6 +21,10 @@ class Block{
         this.newX = 0
         this.newY = 0
         let self = this
+
+        let rect = this.element.getElementsByTagName("rect")
+        rect[0].setAttribute("width", width)
+
         this.blockWidth = (() => {
             let rect = self.element.getElementsByTagName("rect")
             let width = rect[0].getAttribute("width")
@@ -166,11 +170,19 @@ class Editor {
 }
 let blocks = []
 
-
-blocks.push(new Block(0, 0))
-blocks.push(new Block(0, 200))
-blocks.push(new Block(300, 200))
-blocks.push(new Block(300, 0))
+for (let i = 0; i < 10; i++) {
+    blocks.push(
+        new Block(
+            getRandomArbitrary(-300, 300),
+            getRandomArbitrary(-300, 300),
+            getRandomArbitrary(50, 300),
+            getRandomArbitrary(50, 300),
+        )
+    )
+}
+// blocks.push(new Block(0, 200))
+// blocks.push(new Block(300, 200))
+// blocks.push(new Block(300, 0))
 
 blocks.forEach(function (block) {
     block.appendTo(svgArea)
@@ -180,7 +192,9 @@ let myEditor = new Editor(0, 0, blocks)
 
 drawXYAxis()
 
-
+function getRandomArbitrary(min, max) {
+    return Math.random() * (max - min) + min;
+}
 function drawXYAxis() {
     // X軸の描画
     var xAxis = document.createElementNS("http://www.w3.org/2000/svg", "line");
