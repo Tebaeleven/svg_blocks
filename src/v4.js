@@ -135,27 +135,23 @@ class Editor {
         this.isDrag = false
 
         let self = this
-        this.element.addEventListener("mousedown", function (e) {
+        let newX = 0
+        let newY = 0
+        let draggedBlock = false
+        let globalDraggedBlock
+        let canConnectBlock = false
 
+        this.element.addEventListener("mousedown", function (e) {
             if (!globalIsDrag) {
                 self.isDrag = true
             } else {
                 console.log("エディタマウスダウン")
-                let draggedBlock
-                self.block.forEach(block => {
-                    if (block.isDrag) { //ドラッグされているブロックを見つける
-                        draggedBlock = block
-                    }
-                })
-                console.log("ドラッグなう", draggedBlock)
-                self.deleteConnect(draggedBlock)
-
+                globalDraggedBlock = self.findDraggedBlock(self.block)
+                console.log("ドラッグ中(配下含め)", globalDraggedBlock)
+                self.deleteConnect(globalDraggedBlock)
             }
         })
-        let newX = 0
-        let newY = 0
-        let draggedBlock = false
-        let canConnectBlock = false
+
         document.addEventListener("mousemove", function (e) {
             if (self.isDrag) {
                 let dx = newX - e.clientX
@@ -169,17 +165,18 @@ class Editor {
                     b.scrollBlock();
                 });
             } else if (globalIsDrag) { //ブロックをドラッグしている時のみ動く
-                [draggedBlock, canConnectBlock] = self.isConnectBlock()
+                globalDraggedBlock = self.findDraggedBlock(self.block)
+                canConnectBlock = self.isConnectBlock(globalDraggedBlock)
+
                 let bottomBlocks
-                if (draggedBlock.children) {
-                    bottomBlocks = self.searchBottomBlocks(draggedBlock)
+                if (globalDraggedBlock.children) {
+                    bottomBlocks = self.searchBottomBlocks(globalDraggedBlock)
                 }
                 if (bottomBlocks) {
                     bottomBlocks.forEach(item => { //配下を全て動かす
                         item.moveBlock(dx, dy)
                     })
                 }
-                // self.deleteConnect(draggedBlock)
             }
             newX = e.clientX
             newY = e.clientY
@@ -190,19 +187,21 @@ class Editor {
                 b.scrollBlock();
             });
         });
-        document.addEventListener("mouseup", function (e) {
+        this.element.addEventListener("mouseup", function (e) {
             if (self.isDrag) { //エディタの処理
                 console.log("エディタ終了")
                 self.isDrag = false
             } else { //ブロックのクリック処理終了時に実行
                 //TODO ドラッグしていたものがおかしい
-                if (draggedBlock && canConnectBlock) { //接続できる状態だったら
-                    self.connectBlock(draggedBlock, canConnectBlock)
-                    console.log("ドラッグしていたもの", canConnectBlock)
+                canConnectBlock = self.isConnectBlock(globalDraggedBlock)
+                if (globalDraggedBlock && canConnectBlock) { //接続できる状態だったら
+                    self.connectBlock(globalDraggedBlock, canConnectBlock)
+                    console.log("ドラッグしていたもの", globalDraggedBlock)
 
                     console.log("接続先が見つかっていました", canConnectBlock)
                 }
             }
+            globalDraggedBlock = null
         })
     }
     searchBottomBlocks(draggedBlock) {
@@ -255,8 +254,6 @@ class Editor {
             let bottomBlocks
             if (draggedBlock.children) {
                 bottomBlocks = this.searchBottomBlocks(draggedBlock)
-            } else {
-                
             }
             console.log(bottomBlocks)
             if (bottomBlocks) {
@@ -379,29 +376,32 @@ class Editor {
                 betweenBottom.x = betweenBottom.x + totalWidth + draggedTop.blockWidth
                 betweenBottom.moveBlock(0, 0)
 
-                //ドラッグしている直下のブロックの配下のブロックを全て移動
-                if (betweenBottom.children) {
-                    let search = this.searchBottomBlocks(betweenBottom)
-                    search.forEach(item => {
-                        item.moveBlock(-totalWidth - draggedTop.blockWidth * globalZoom, 0)
-                    })
-                } 
+                // //ドラッグしている直下のブロックの配下のブロックを全て移動
+                // if (betweenBottom.children) {
+                //     let search = this.searchBottomBlocks(betweenBottom)
+                //     search.forEach(item => {
+                //         item.moveBlock(-totalWidth - draggedTop.blockWidth * globalZoom, 0)
+                //     })
+                // } 
             }
         }
-
     }
-    isConnectBlock() { //接続できるか判定
+    findDraggedBlock(blocks) {
         let draggedBlock
-        this.block.forEach(block => {
+        blocks.forEach(block => {
             if (block.isDrag) { //ドラッグされているブロックを見つける
-                draggedBlock=block
+                draggedBlock = block
             }
         })
-        let nearBlock
+        return draggedBlock
+    }
+    isConnectBlock(dragged) { //接続できるか判定
+        let draggedBlock = dragged
         let canConnect
-        this.block.forEach(b => {
-            if (!b.isDrag) { //ドラッグされていないブロックを見つける
-                nearBlock = b
+
+        this.block.forEach(b => { //ドラッグされていないブロックを見つける
+            if (!b.isDrag) {
+                let nearBlock = b
                 nearBlock.connect.style.display = "none"
                 let margin = 50
                 let rightX = Math.abs((draggedBlock.x - draggedBlock.blockWidth / 2) - (nearBlock.x + nearBlock.blockWidth / 2))
@@ -412,11 +412,12 @@ class Editor {
                 }
             }
         })
+
         if (canConnect) { //接続先が見つかった場合
             canConnect.connect.style.display = "block"
-            return [draggedBlock, canConnect]
+            return canConnect
         } else { //接続先がなかった場合
-            return [draggedBlock,false]
+            return false
         }
     }
 }
