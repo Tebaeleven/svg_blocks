@@ -334,6 +334,14 @@ class Editor {
                 let draggedTop = draggedBlock
                 let draggedBottom = myObject.find(obj => obj.id === draggedBottomID); 
                 let betweenBottom = myObject.find(obj => obj.id === betweenBottomID); 
+                //TODO searchBottomBlocksでなぜか他の要素まで取得してしまっている
+                //これのせいで、配置の動きもおかしくなっている
+                let group
+                if (draggedTop.children) {
+                    group = this.searchBottomBlocks(draggedTop)
+
+                } 
+                console.log("ドラッグ中", group)
 
                 betweenTop.children = draggedTopID //子
                 betweenBottom.parent = draggedBottomID //親
@@ -348,16 +356,9 @@ class Editor {
                 draggedTop.moveBlock(0, 0)
 
                 //ドラッグしている操作中のものを全て移動させる
-                //TODO searchBottomBlocksでなぜか他の要素まで取得してしまっている
-                //これのせいで、配置の動きもおかしくなっている
-                if (draggedTop.children) {
-                    let s = this.searchBottomBlocks(draggedTop)
-                    s.forEach(item => {
-                        item.moveBlock(-newX * globalZoom, -newY*globalZoom)
-                    })
-                    console.log(s,"ドラッグ中")
-                } 
-                
+                group.forEach(item => {
+                    item.moveBlock(-newX * globalZoom, -newY*globalZoom)
+                })
 
                 
                 let totalWidth = bottomBlocks.reduce((total, obj) => {
@@ -371,16 +372,16 @@ class Editor {
 
                 //ドラッグしている直下のブロックを移動
                 console.log("下ブロック",betweenBottom)
-                // betweenBottom.x = betweenBottom.x + totalWidth + draggedTop.blockWidth
-                // betweenBottom.moveBlock(0, 0)
+                betweenBottom.x = betweenBottom.x + totalWidth + draggedTop.blockWidth
+                betweenBottom.moveBlock(0, 0)
 
-                // //ドラッグしている直下のブロックの配下のブロックを全て移動
-                // if (betweenBottom.children) {
-                //     let search = this.searchBottomBlocks(betweenBottom)
-                //     search.forEach(item => {
-                //         item.moveBlock(-totalWidth - draggedTop.blockWidth * globalZoom, 0)
-                //     })
-                // } 
+                //ドラッグしている直下のブロックの配下のブロックを全て移動
+                if (betweenBottom.children) {
+                    let search = this.searchBottomBlocks(betweenBottom)
+                    search.forEach(item => {
+                        item.moveBlock(-totalWidth - draggedTop.blockWidth * globalZoom, 0)
+                    })
+                } 
             }
         }
 
