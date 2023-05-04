@@ -136,11 +136,20 @@ class Editor {
 
         let self = this
         this.element.addEventListener("mousedown", function (e) {
-            console.log("エディタマウスダウン")
-            self.deleteConnect(draggedBlock)
 
             if (!globalIsDrag) {
                 self.isDrag = true
+            } else {
+                console.log("エディタマウスダウン")
+                let draggedBlock
+                self.block.forEach(block => {
+                    if (block.isDrag) { //ドラッグされているブロックを見つける
+                        draggedBlock = block
+                    }
+                })
+                console.log("ドラッグなう", draggedBlock)
+                self.deleteConnect(draggedBlock)
+
             }
         })
         let newX = 0
@@ -164,16 +173,13 @@ class Editor {
                 let bottomBlocks
                 if (draggedBlock.children) {
                     bottomBlocks = self.searchBottomBlocks(draggedBlock)
-                } else {
-                    
                 }
                 if (bottomBlocks) {
                     bottomBlocks.forEach(item => { //配下を全て動かす
                         item.moveBlock(dx, dy)
                     })
                 }
-
-                self.deleteConnect(draggedBlock)
+                // self.deleteConnect(draggedBlock)
             }
             newX = e.clientX
             newY = e.clientY
@@ -189,7 +195,6 @@ class Editor {
                 console.log("エディタ終了")
                 self.isDrag = false
             } else { //ブロックのクリック処理終了時に実行
-
                 if (draggedBlock && canConnectBlock) { //接続できる状態だったら
                     self.connectBlock(draggedBlock, canConnectBlock)
                     console.log("接続先が見つかっていました", canConnectBlock)
@@ -217,9 +222,9 @@ class Editor {
         return bottomBlocks
     }
     deleteConnect(draggedBlock) {
+        console.log("結果", draggedBlock.parent !== null)
         //ドラッグしたブロックの親から子を削除
-        if (draggedBlock.parent) {
-            
+        if (draggedBlock && draggedBlock.parent !== null) {
             this.block.forEach(item => { //検索
                 if (item.id === draggedBlock.parent) {
                     item.children = null
@@ -230,7 +235,7 @@ class Editor {
             draggedBlock.parent = null
             draggedBlock.changeText()
         } else {
-            console.log("接続先がない")
+            console.log("接続先がない", draggedBlock.parent)
         }
     }
     connectBlock(draggedBlock, canConnectBlock) { //ブロックを接続する
@@ -258,8 +263,6 @@ class Editor {
                 bottomBlocks.forEach(item => {
                     item.moveBlock(-newX * globalZoom, -newY * globalZoom)
                 })
-            } else {
-                
             }
 
             draggedBlock.moveBlock(0, 0)
@@ -267,59 +270,58 @@ class Editor {
             canConnectBlock.changeText()
             console.log("1ブロックに接続")
 
-        }
-        else {
+        } else {
+            console.log(canConnectBlock)
+            console.log("間に挟もうとしています")
             let bottomBlocks
             if (draggedBlock.children) {
                 bottomBlocks = this.searchBottomBlocks(draggedBlock)
             } else {
-                
+                bottomBlocks=null
             }
             let myObject = this.block
             let betweenTopID = canConnectBlock.id
             let draggedTopID = draggedBlock.id
-            // let draggedBottomID = bottomBlocks[bottomBlocks.length-1]
+            let draggedBottomID = null
+            if (bottomBlocks){
+                draggedBottomID = bottomBlocks[bottomBlocks.length - 1].id
+            }
             let betweenBottomID = canConnectBlock.children
-            if (bottomBlocks !== false) {
+            console.log("bottom", bottomBlocks)
+            console.log("draggedBottomID", draggedBottomID)
+            if (bottomBlocks === null) {
                 /**
-                 * ここらへんで何か重大なエラーが起きている。
-                 * 明日の自分、頑張れよ！
+                 * 1ブロックを2つの間に挟む
                  */
+                let betweenTop = canConnectBlock
+                let draggedTop = draggedBlock
+                let betweenBottom = myObject.find(obj => obj.id === betweenBottomID); 
 
-                // /**
-                //  * 1ブロックを2つの間に挟む
-                //  */
-                
-                // let betweenTop = canConnectBlock
-                // let draggedTop = draggedBlock
-                // let betweenBottom = myObject.find(obj => obj.id === betweenBottomID); 
+                betweenTop.children = draggedTopID
+                draggedTop.parent = betweenTopID
+                draggedTop.children = betweenBottomID
+                betweenBottom.parent = draggedTopID
 
-                // betweenTop.children = draggedTopID
-                // draggedTop.parent = betweenTopID
-                // draggedTop.children = betweenBottomID
-                // betweenBottom.parent = draggedTopID
-
-                // //ドラッグしている一つ動かす
-                // draggedTop.x = betweenTop.x + betweenTop.blockWidth / 2 + draggedTop.blockWidth / 2
-                // draggedTop.y = betweenTop.y
-                // draggedTop.moveBlock(0, 0)
-                
-                // betweenBottom.x = betweenBottom.x + draggedTop.blockWidth / 2 + betweenBottom.blockWidth / 2
-                // betweenBottom.moveBlock(0, 0)
-                // let search
-                // if (betweenBottom.children) {
-                //     search = this.searchBottomBlocks(betweenBottom)
-                //     search.forEach(item => {
-                //         item.moveBlock(50, 0)
-                //     })
-                // } else {
-                    
-                // }
+                //ドラッグしている一つ動かす
+                draggedTop.x = betweenTop.x + betweenTop.blockWidth / 2 + draggedTop.blockWidth / 2
+                draggedTop.y = betweenTop.y
+                draggedTop.moveBlock(0, 0)
+                console.log("betweenbottom",betweenBottom)
                 
 
-                // console.log(betweenTop, draggedTop, betweenBottom)
-                // console.log(bottomBlocks)
-                // console.log("1ブロックを2つの間に挟む")
+                //ドラッグしている直下のブロックを移動
+                betweenBottom.x = betweenBottom.x + draggedTop.blockWidth
+                betweenBottom.moveBlock(0, 0)
+                //ドラッグしている直下のブロックの配下のブロックを全て移動
+                let search
+                if (betweenBottom.children) {
+                    search = this.searchBottomBlocks(betweenBottom)
+                    search.forEach(item => {
+                        item.moveBlock(-draggedTop.blockWidth * globalZoom, 0)
+                    })
+                } 
+
+                console.log("1ブロックを2つの間に挟む")
             }
             else {
                 /**
@@ -327,6 +329,51 @@ class Editor {
                  */
                 console.log("複数ブロックを2つの間に挟む")
 
+                let betweenTop = canConnectBlock
+                let draggedTop = draggedBlock
+                let draggedBottom = myObject.find(obj => obj.id === draggedBottomID); 
+                let betweenBottom = myObject.find(obj => obj.id === betweenBottomID); 
+
+                betweenTop.children = draggedTopID //子
+                betweenBottom.parent = draggedBottomID //親
+                draggedBottom.children = betweenBottomID //子
+                draggedTop.parent = betweenTopID
+
+                //ドラッグしている一つ動かす
+                draggedTop.x = betweenTop.x + betweenTop.blockWidth / 2 + draggedTop.blockWidth / 2
+                draggedTop.y = betweenTop.y
+                draggedTop.moveBlock(0, 0)
+
+                // // //ドラッグしている操作中のものを全て移動させる
+                if (draggedTop.children) {
+                    let s = this.searchBottomBlocks(draggedTop)
+                    s.forEach(item => {
+                        item.moveBlock(-(betweenTop.blockWidth / 2 + draggedTop.blockWidth / 2) * globalZoom, 0)
+                    })
+
+                } 
+
+                
+                let totalWidth = bottomBlocks.reduce((total, obj) => {
+                    if (obj.blockWidth !== null) {
+                        return total + obj.blockWidth;
+                    } else {
+                        return total;
+                    }
+                }, 0);
+                console.log("合計幅", totalWidth)
+                //ドラッグしている直下のブロックを移動
+                betweenBottom.x = betweenBottom.x + totalWidth + draggedTop.blockWidth
+                betweenBottom.y = betweenTop.y
+                betweenBottom.moveBlock(0, 0)
+
+                //ドラッグしている直下のブロックの配下のブロックを全て移動
+                if (betweenBottom.children) {
+                    let search = this.searchBottomBlocks(betweenBottom)
+                    search.forEach(item => {
+                        item.moveBlock(-totalWidth - draggedTop.blockWidth * globalZoom, 0)
+                    })
+                } 
             }
         }
 
@@ -338,6 +385,7 @@ class Editor {
                 draggedBlock=block
             }
         })
+        console.log("ドラッグしてるもの検索",draggedBlock)
         let nearBlock
         let canConnect
         this.block.forEach(b => {
@@ -365,27 +413,33 @@ class Editor {
 
 let blocks = []
 
-for (let i = 0; i < 5; i++) {
-    blocks.push(
-        // new Block(
-        //     getRandomArbitrary(-300, 300),
-        //     getRandomArbitrary(-300, 300),
-        //     260,//getRandomArbitrary(100, 200),
-        //     50,//getRandomArbitrary(50, 50),
-        //     "#e74c3c",
-        //     "red",
-        // )
-        new Block(
-            getRandomArbitrary(-300, 300),
-            getRandomArbitrary(-300, 300),
-            getRandomArbitrary(200, 200),
-            getRandomArbitrary(50, 50),
-            "#e74c3c",
-            "red",
-        )
-    )
-}
-
+// for (let i = 0; i < 5; i++) {
+//     blocks.push(
+//         // new Block(
+//         //     getRandomArbitrary(-300, 300),
+//         //     getRandomArbitrary(-300, 300),
+//         //     260,//getRandomArbitrary(100, 200),
+//         //     50,//getRandomArbitrary(50, 50),
+//         //     "#e74c3c",
+//         //     "red",
+//         // )
+//         new Block(
+//             getRandomArbitrary(-300, 300),
+//             getRandomArbitrary(-300, 300),
+//             getRandomArbitrary(50, 200),
+//             getRandomArbitrary(50, 50),
+//             "#e74c3c",
+//             "red",
+//         )
+//     )
+// }
+blocks.push(
+    new Block(0, 0, 150, 50, "#e74c3c", "red",),
+    new Block(200, 0, 300, 50, "#e74c3c", "red",),
+    new Block(0, 200, 300, 50, "#e74c3c", "red",),
+    new Block(200, 200, 150, 50, "#e74c3c", "red",),
+    new Block(300, 200, 150, 50, "#e74c3c", "red",),
+)
 blocks.forEach(function (block) {
     block.appendTo(svgArea)
 })
