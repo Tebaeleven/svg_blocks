@@ -312,14 +312,15 @@ class Editor {
                 //ドラッグしている直下のブロックを移動
                 betweenBottom.x = betweenBottom.x + draggedTop.blockWidth
                 betweenBottom.moveBlock(0, 0)
-                //ドラッグしている直下のブロックの配下のブロックを全て移動
-                let search
-                if (betweenBottom.children) {
-                    search = this.searchBottomBlocks(betweenBottom)
-                    search.forEach(item => {
-                        item.moveBlock(-draggedTop.blockWidth * globalZoom, 0)
-                    })
-                } 
+
+                // //ドラッグしている直下のブロックの配下のブロックを全て移動
+                // let search
+                // if (betweenBottom.children) {
+                //     search = this.searchBottomBlocks(betweenBottom)
+                //     search.forEach(item => {
+                //         item.moveBlock(-draggedTop.blockWidth * globalZoom, 0)
+                //     })
+                // } 
 
                 console.log("1ブロックを2つの間に挟む")
             }
@@ -339,19 +340,24 @@ class Editor {
                 draggedBottom.children = betweenBottomID //子
                 draggedTop.parent = betweenTopID
 
+                let newX = betweenTop.x + betweenTop.blockWidth / 2 + draggedTop.blockWidth / 2 - draggedTop.x
+                let newY = betweenTop.y - draggedTop.y 
                 //ドラッグしている一つ動かす
                 draggedTop.x = betweenTop.x + betweenTop.blockWidth / 2 + draggedTop.blockWidth / 2
                 draggedTop.y = betweenTop.y
                 draggedTop.moveBlock(0, 0)
 
-                // // //ドラッグしている操作中のものを全て移動させる
+                //ドラッグしている操作中のものを全て移動させる
+                //TODO searchBottomBlocksでなぜか他の要素まで取得してしまっている
+                //これのせいで、配置の動きもおかしくなっている
                 if (draggedTop.children) {
                     let s = this.searchBottomBlocks(draggedTop)
                     s.forEach(item => {
-                        item.moveBlock(-(betweenTop.blockWidth / 2 + draggedTop.blockWidth / 2) * globalZoom, 0)
+                        item.moveBlock(-newX * globalZoom, -newY*globalZoom)
                     })
-
+                    console.log(s,"ドラッグ中")
                 } 
+                
 
                 
                 let totalWidth = bottomBlocks.reduce((total, obj) => {
@@ -362,18 +368,19 @@ class Editor {
                     }
                 }, 0);
                 console.log("合計幅", totalWidth)
-                //ドラッグしている直下のブロックを移動
-                betweenBottom.x = betweenBottom.x + totalWidth + draggedTop.blockWidth
-                betweenBottom.y = betweenTop.y
-                betweenBottom.moveBlock(0, 0)
 
-                //ドラッグしている直下のブロックの配下のブロックを全て移動
-                if (betweenBottom.children) {
-                    let search = this.searchBottomBlocks(betweenBottom)
-                    search.forEach(item => {
-                        item.moveBlock(-totalWidth - draggedTop.blockWidth * globalZoom, 0)
-                    })
-                } 
+                //ドラッグしている直下のブロックを移動
+                console.log("下ブロック",betweenBottom)
+                // betweenBottom.x = betweenBottom.x + totalWidth + draggedTop.blockWidth
+                // betweenBottom.moveBlock(0, 0)
+
+                // //ドラッグしている直下のブロックの配下のブロックを全て移動
+                // if (betweenBottom.children) {
+                //     let search = this.searchBottomBlocks(betweenBottom)
+                //     search.forEach(item => {
+                //         item.moveBlock(-totalWidth - draggedTop.blockWidth * globalZoom, 0)
+                //     })
+                // } 
             }
         }
 
@@ -385,7 +392,6 @@ class Editor {
                 draggedBlock=block
             }
         })
-        console.log("ドラッグしてるもの検索",draggedBlock)
         let nearBlock
         let canConnect
         this.block.forEach(b => {
