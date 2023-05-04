@@ -8,7 +8,7 @@ console.log(BlockDom)
 
 let globalCameraX = 0
 let globalCameraY = 0
-let globalZoom = 1
+let globalZoom = 2
 let globalIsDrag = false
 let dx, dy
 
@@ -21,8 +21,8 @@ class Block{
         this.element = BlockDom.cloneNode(true);
         this.rect = this.element.getElementsByTagName("rect")
         this.connect = this.element.getElementById("connect")
+        this.text = this.element.getElementById("dummy")
         this.connect.style.display = "none";
-
         this.isTopBlock=false
         this.parent = null
         this.children = null
@@ -30,13 +30,16 @@ class Block{
         let self = this
         let newX = 0
         let newY = 0
-        
         this.rect[0].setAttribute("width", width)
         this.rect[0].setAttribute("height", height)
         this.rect[0].setAttribute("fill", fill)
         this.rect[0].setAttribute("stroke", stroke)
-        this.connect.setAttribute("x", width+15)
-        
+        this.connect.setAttribute("x", width + 15)
+        let textWidth
+        document.addEventListener("DOMContentLoaded", function () {
+            textWidth=self.text.getBBox()
+            console.log("読み終わった", textWidth)
+        })
         this.blockWidth = (() => {
             let width = this.rect[0].getAttribute("width")
             return Number(width)
@@ -51,7 +54,7 @@ class Block{
         this.moveXY(x, y)
         this.setSize()
         this.setTextXY()
-
+        
         this.element.addEventListener("mousedown", function (e) {
             globalIsDrag = true
             console.log("マウスダウン")
@@ -205,6 +208,9 @@ class Editor {
             }
             globalDraggedBlock = null
         })
+    }
+    getTextSize() {
+        
     }
     searchBottomBlocks(draggedBlock) {
         let bottomBlocks=[]
