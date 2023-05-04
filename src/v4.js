@@ -28,12 +28,15 @@ class Block{
         this.children = null
         this.isDrag = false
         let self = this
-
+        let newX = 0
+        let newY = 0
+        
         this.rect[0].setAttribute("width", width)
         this.rect[0].setAttribute("height", height)
         this.rect[0].setAttribute("fill", fill)
         this.rect[0].setAttribute("stroke", stroke)
-
+        this.connect.setAttribute("x", width+15)
+        
         this.blockWidth = (() => {
             let width = this.rect[0].getAttribute("width")
             return Number(width)
@@ -57,8 +60,7 @@ class Block{
             self.changeText()
         })
 
-        let newX = 0
-        let newY = 0
+
         document.addEventListener("mousemove", function (e) {
             if (self.isDrag) {
                 dx = newX - e.clientX
