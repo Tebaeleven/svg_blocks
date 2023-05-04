@@ -11,7 +11,6 @@ let globalCameraY = 0
 let globalZoom = 1
 let globalIsDrag = false
 let dx, dy
-let bottomBlocks = []
 
 class Block{
     static counter = 0
@@ -85,7 +84,7 @@ class Block{
     }
 
     setTextXY() {
-        this.element.getElementById("xy").textContent = "x:" + Math.floor(this.x) + "y:" + Math.floor(this.y)
+        // this.element.getElementById("xy").textContent = "x:" + Math.floor(this.x) + "y:" + Math.floor(this.y)
     }
     bringToFront() {
         svgArea.removeChild(this.element)
@@ -160,7 +159,19 @@ class Editor {
                 });
             } else if (globalIsDrag) { //ブロックをドラッグしている時のみ動く
                 [draggedBlock, canConnectBlock] = self.isConnectBlock()
-                self.searchBottomBlocks(draggedBlock)
+                let bottomBlocks
+                if (draggedBlock.children) {
+                    bottomBlocks = self.searchBottomBlocks(draggedBlock)
+                } else {
+                    
+                }
+                if (bottomBlocks) {
+                    bottomBlocks.forEach(item => { //配下を全て動かす
+                        item.moveBlock(dx, dy)
+                    })
+                }
+
+                self.deleteConnect(draggedBlock)
             }
             newX = e.clientX
             newY = e.clientY
@@ -176,9 +187,10 @@ class Editor {
                 console.log("エディタ終了")
                 self.isDrag = false
             } else { //ブロックのクリック処理終了時に実行
+
                 if (draggedBlock && canConnectBlock) { //接続できる状態だったら
                     self.connectBlock(draggedBlock, canConnectBlock)
-                    // console.log("接続先が見つかっていました", canConnectBlock)
+                    console.log("接続先が見つかっていました", canConnectBlock)
                 } else {
                     //接続解除
                     self.deleteConnect(draggedBlock)
@@ -187,21 +199,20 @@ class Editor {
         })
     }
     searchBottomBlocks(draggedBlock) {
-        bottomBlocks=[]
+        let bottomBlocks=[]
         let myObject = this.block
         let currentObject = myObject.find(obj => obj.id === draggedBlock.id); // idが1のオブジェクトを取得
         let childId = currentObject.children; // 子要素のIDを取得
+        if (childId === null) {
+            return 
+        }
         let childObject
         while (childId !== null) {
             childObject = myObject.find(obj => obj.id === childId); // 子要素のオブジェクトを取得
             childId = childObject.children; // 次の子要素のIDを取得
             bottomBlocks.push(childObject)
         }
-        console.log(bottomBlocks); // 子要素のオブジェクトを出力
-        bottomBlocks.forEach(item => {
-            item.moveBlock(dx,dy)
-        })
-        console.log(dx,dy)
+        return bottomBlocks
     }
     deleteConnect(draggedBlock) {
         //ドラッグしたブロックの親から子を削除
@@ -209,7 +220,6 @@ class Editor {
             if (item.id === draggedBlock.parent) {
                 item.children = null
                 item.changeText()
-                console.log
             }
         })
         //ドラッグしたブロックの親を削除
@@ -217,21 +227,102 @@ class Editor {
         draggedBlock.changeText()
     }
     connectBlock(draggedBlock, canConnectBlock) { //ブロックを接続する
-        draggedBlock.parent = canConnectBlock.id //ドラッグしたブロックの親を設定
-        canConnectBlock.children = draggedBlock.id //接続先の子を設定
-        //ブロックを移動させる
-        let newX = canConnectBlock.x + canConnectBlock.blockWidth - draggedBlock.x
-        let newY = canConnectBlock.y - draggedBlock.y
-        draggedBlock.x = canConnectBlock.x + canConnectBlock.blockWidth
-        draggedBlock.y = canConnectBlock.y
-        console.log("動いた量", newX)
-        
-        bottomBlocks.forEach(item => {
-            item.moveBlock(-newX, -newY)
-        })
-        draggedBlock.moveBlock(0,0)
-        draggedBlock.changeText()
-        canConnectBlock.changeText()
+        if (canConnectBlock.children === null) { //接続先がnullかどうか
+            /**
+             * 1ブロックに接続
+             */
+            console.log("接続できる")
+            draggedBlock.parent = canConnectBlock.id //ドラッグしたブロックの親を設定
+            canConnectBlock.children = draggedBlock.id //接続先の子を設定
+            //ブロックを移動させる
+            let newX = canConnectBlock.x + canConnectBlock.blockWidth / 2 + draggedBlock.blockWidth / 2 - draggedBlock.x
+            let newY = canConnectBlock.y - draggedBlock.y
+
+            draggedBlock.x = canConnectBlock.x + canConnectBlock.blockWidth / 2 + draggedBlock.blockWidth / 2
+            draggedBlock.y = canConnectBlock.y
+            let bottomBlocks
+            if (draggedBlock.children) {
+                bottomBlocks = this.searchBottomBlocks(draggedBlock)
+            } else {
+                
+            }
+            console.log(bottomBlocks)
+            if (bottomBlocks) {
+                bottomBlocks.forEach(item => {
+                    item.moveBlock(-newX * globalZoom, -newY * globalZoom)
+                })
+            } else {
+                
+            }
+
+            draggedBlock.moveBlock(0, 0)
+            draggedBlock.changeText()
+            canConnectBlock.changeText()
+            console.log("1ブロックに接続")
+
+        }
+        else {
+            let bottomBlocks
+            if (draggedBlock.children) {
+                bottomBlocks = this.searchBottomBlocks(draggedBlock)
+            } else {
+                
+            }
+            let myObject = this.block
+            let betweenTopID = canConnectBlock.id
+            let draggedTopID = draggedBlock.id
+            // let draggedBottomID = bottomBlocks[bottomBlocks.length-1]
+            let betweenBottomID = canConnectBlock.children
+            if (bottomBlocks !== false) {
+                /**
+                 * ここらへんで何か重大なエラーが起きている。
+                 * 明日の自分、頑張れよ！
+                 */
+
+                // /**
+                //  * 1ブロックを2つの間に挟む
+                //  */
+                
+                // let betweenTop = canConnectBlock
+                // let draggedTop = draggedBlock
+                // let betweenBottom = myObject.find(obj => obj.id === betweenBottomID); 
+
+                // betweenTop.children = draggedTopID
+                // draggedTop.parent = betweenTopID
+                // draggedTop.children = betweenBottomID
+                // betweenBottom.parent = draggedTopID
+
+                // //ドラッグしている一つ動かす
+                // draggedTop.x = betweenTop.x + betweenTop.blockWidth / 2 + draggedTop.blockWidth / 2
+                // draggedTop.y = betweenTop.y
+                // draggedTop.moveBlock(0, 0)
+                
+                // betweenBottom.x = betweenBottom.x + draggedTop.blockWidth / 2 + betweenBottom.blockWidth / 2
+                // betweenBottom.moveBlock(0, 0)
+                // let search
+                // if (betweenBottom.children) {
+                //     search = this.searchBottomBlocks(betweenBottom)
+                //     search.forEach(item => {
+                //         item.moveBlock(50, 0)
+                //     })
+                // } else {
+                    
+                // }
+                
+
+                // console.log(betweenTop, draggedTop, betweenBottom)
+                // console.log(bottomBlocks)
+                // console.log("1ブロックを2つの間に挟む")
+            }
+            else {
+                /**
+                 * 複数ブロックを2つの間に挟む
+                 */
+                console.log("複数ブロックを2つの間に挟む")
+
+            }
+        }
+
     }
     isConnectBlock() { //接続できるか判定
         let draggedBlock
@@ -267,13 +358,21 @@ class Editor {
 
 let blocks = []
 
-for (let i = 0; i < 3; i++) {
+for (let i = 0; i < 5; i++) {
     blocks.push(
+        // new Block(
+        //     getRandomArbitrary(-300, 300),
+        //     getRandomArbitrary(-300, 300),
+        //     260,//getRandomArbitrary(100, 200),
+        //     50,//getRandomArbitrary(50, 50),
+        //     "#e74c3c",
+        //     "red",
+        // )
         new Block(
             getRandomArbitrary(-300, 300),
             getRandomArbitrary(-300, 300),
-            260,//getRandomArbitrary(100, 200),
-            50,//getRandomArbitrary(50, 50),
+            getRandomArbitrary(200, 200),
+            getRandomArbitrary(50, 50),
             "#e74c3c",
             "red",
         )
@@ -285,7 +384,9 @@ blocks.forEach(function (block) {
 })
 
 let myEditor = new Editor(0, 0, blocks)
+
 drawXYAxis()
+
 function getRandomArbitrary(min, max) {
     return Math.random() * (max - min) + min;
 }
