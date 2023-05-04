@@ -195,12 +195,12 @@ class Editor {
                 console.log("エディタ終了")
                 self.isDrag = false
             } else { //ブロックのクリック処理終了時に実行
+                //TODO ドラッグしていたものがおかしい
                 if (draggedBlock && canConnectBlock) { //接続できる状態だったら
                     self.connectBlock(draggedBlock, canConnectBlock)
+                    console.log("ドラッグしていたもの", canConnectBlock)
+
                     console.log("接続先が見つかっていました", canConnectBlock)
-                } else {
-                    //接続解除
-                    self.deleteConnect(draggedBlock)
                 }
             }
         })
@@ -279,10 +279,12 @@ class Editor {
             } else {
                 bottomBlocks=null
             }
+
             let myObject = this.block
             let betweenTopID = canConnectBlock.id
             let draggedTopID = draggedBlock.id
             let draggedBottomID = null
+
             if (bottomBlocks){
                 draggedBottomID = bottomBlocks[bottomBlocks.length - 1].id
             }
@@ -296,6 +298,12 @@ class Editor {
                 let betweenTop = canConnectBlock
                 let draggedTop = draggedBlock
                 let betweenBottom = myObject.find(obj => obj.id === betweenBottomID); 
+                
+                let group
+
+                if (betweenBottom.children) {
+                    group = this.searchBottomBlocks(betweenBottom)
+                } 
 
                 betweenTop.children = draggedTopID
                 draggedTop.parent = betweenTopID
@@ -306,21 +314,16 @@ class Editor {
                 draggedTop.x = betweenTop.x + betweenTop.blockWidth / 2 + draggedTop.blockWidth / 2
                 draggedTop.y = betweenTop.y
                 draggedTop.moveBlock(0, 0)
-                console.log("betweenbottom",betweenBottom)
-                
-
+                console.log("betweenbottom", betweenBottom)
                 //ドラッグしている直下のブロックを移動
                 betweenBottom.x = betweenBottom.x + draggedTop.blockWidth
                 betweenBottom.moveBlock(0, 0)
-
-                // //ドラッグしている直下のブロックの配下のブロックを全て移動
-                // let search
-                // if (betweenBottom.children) {
-                //     search = this.searchBottomBlocks(betweenBottom)
-                //     search.forEach(item => {
-                //         item.moveBlock(-draggedTop.blockWidth * globalZoom, 0)
-                //     })
-                // } 
+                //ドラッグしている直下のブロックの配下のブロックを全て移動
+                if (group) {
+                    group.forEach(item => {
+                        item.moveBlock(-draggedTop.blockWidth * globalZoom, 0)
+                    })
+                }
 
                 console.log("1ブロックを2つの間に挟む")
             }
@@ -334,32 +337,33 @@ class Editor {
                 let draggedTop = draggedBlock
                 let draggedBottom = myObject.find(obj => obj.id === draggedBottomID); 
                 let betweenBottom = myObject.find(obj => obj.id === betweenBottomID); 
-                //TODO searchBottomBlocksでなぜか他の要素まで取得してしまっている
-                //これのせいで、配置の動きもおかしくなっている
+
                 let group
+
                 if (draggedTop.children) {
                     group = this.searchBottomBlocks(draggedTop)
-
                 } 
                 console.log("ドラッグ中", group)
 
                 betweenTop.children = draggedTopID //子
                 betweenBottom.parent = draggedBottomID //親
                 draggedBottom.children = betweenBottomID //子
-                draggedTop.parent = betweenTopID
+                draggedTop.parent = betweenTopID //親
 
                 let newX = betweenTop.x + betweenTop.blockWidth / 2 + draggedTop.blockWidth / 2 - draggedTop.x
-                let newY = betweenTop.y - draggedTop.y 
+                let newY = betweenTop.y - draggedTop.y
+
                 //ドラッグしている一つ動かす
                 draggedTop.x = betweenTop.x + betweenTop.blockWidth / 2 + draggedTop.blockWidth / 2
                 draggedTop.y = betweenTop.y
                 draggedTop.moveBlock(0, 0)
-
+                
                 //ドラッグしている操作中のものを全て移動させる
-                group.forEach(item => {
-                    item.moveBlock(-newX * globalZoom, -newY*globalZoom)
-                })
-
+                if (group) {
+                    group.forEach(item => {
+                        item.moveBlock(-newX * globalZoom, -newY * globalZoom)
+                    })
+                }
                 
                 let totalWidth = bottomBlocks.reduce((total, obj) => {
                     if (obj.blockWidth !== null) {
