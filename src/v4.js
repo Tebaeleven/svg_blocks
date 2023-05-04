@@ -251,6 +251,8 @@ class Editor {
 
             draggedBlock.x = canConnectBlock.x + canConnectBlock.blockWidth / 2 + draggedBlock.blockWidth / 2
             draggedBlock.y = canConnectBlock.y
+            draggedBlock.moveBlock(0, 0)
+
             let bottomBlocks
             if (draggedBlock.children) {
                 bottomBlocks = this.searchBottomBlocks(draggedBlock)
@@ -258,11 +260,10 @@ class Editor {
             console.log(bottomBlocks)
             if (bottomBlocks) {
                 bottomBlocks.forEach(item => {
-                    item.moveBlock(-newX * globalZoom, -newY * globalZoom)
+                    item.moveBlock(-newX * globalZoom, -newY * globalZoom )
                 })
             }
 
-            draggedBlock.moveBlock(0, 0)
             draggedBlock.changeText()
             canConnectBlock.changeText()
             console.log("1ブロックに接続")
@@ -313,12 +314,12 @@ class Editor {
                 draggedTop.moveBlock(0, 0)
                 console.log("betweenbottom", betweenBottom)
                 //ドラッグしている直下のブロックを移動
-                betweenBottom.x = betweenBottom.x + draggedTop.blockWidth
+                betweenBottom.x = betweenBottom.x + draggedTop.blockWidth 
                 betweenBottom.moveBlock(0, 0)
                 //ドラッグしている直下のブロックの配下のブロックを全て移動
                 if (group) {
                     group.forEach(item => {
-                        item.moveBlock(-draggedTop.blockWidth * globalZoom, 0)
+                        item.moveBlock(-draggedTop.blockWidth*globalZoom , 0)
                     })
                 }
 
@@ -376,13 +377,13 @@ class Editor {
                 betweenBottom.x = betweenBottom.x + totalWidth + draggedTop.blockWidth
                 betweenBottom.moveBlock(0, 0)
 
-                // //ドラッグしている直下のブロックの配下のブロックを全て移動
-                // if (betweenBottom.children) {
-                //     let search = this.searchBottomBlocks(betweenBottom)
-                //     search.forEach(item => {
-                //         item.moveBlock(-totalWidth - draggedTop.blockWidth * globalZoom, 0)
-                //     })
-                // } 
+                //ドラッグしている直下のブロックの配下のブロックを全て移動
+                if (betweenBottom.children) {
+                    let search = this.searchBottomBlocks(betweenBottom)
+                    search.forEach(item => {
+                        item.moveBlock((-totalWidth - draggedTop.blockWidth) * globalZoom, 0)
+                    })
+                } 
             }
         }
     }
@@ -447,9 +448,9 @@ let blocks = []
 // }
 blocks.push(
     new Block(0, 0, 150, 50, "#e74c3c", "red",),
-    new Block(200, 0, 300, 50, "#e74c3c", "red",),
-    new Block(0, 200, 300, 50, "#e74c3c", "red",),
-    new Block(200, 200, 150, 50, "#e74c3c", "red",),
+    new Block(200, 0, 300, 50, "#5252ff", "blue",),
+    new Block(0, 200, 300, 50, "#00c921", "green",),
+    new Block(200, 200, 150, 50, "yellow", "orange",),
     new Block(300, 200, 150, 50, "#e74c3c", "red",),
 )
 blocks.forEach(function (block) {
