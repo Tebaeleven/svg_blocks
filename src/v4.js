@@ -50,7 +50,6 @@ class Block{
         this.setTextXY()
 
         this.element.addEventListener("mousedown", function (e) {
-            e.stopPropagation()
             globalIsDrag = true
             console.log("マウスダウン")
             self.isDrag = true
@@ -137,9 +136,12 @@ class Editor {
 
         let self = this
         this.element.addEventListener("mousedown", function (e) {
-            e.stopPropagation()
             console.log("エディタマウスダウン")
-            self.isDrag = true
+            self.deleteConnect(draggedBlock)
+
+            if (!globalIsDrag) {
+                self.isDrag = true
+            }
         })
         let newX = 0
         let newY = 0
@@ -216,15 +218,20 @@ class Editor {
     }
     deleteConnect(draggedBlock) {
         //ドラッグしたブロックの親から子を削除
-        this.block.forEach(item => {
-            if (item.id === draggedBlock.parent) {
-                item.children = null
-                item.changeText()
-            }
-        })
-        //ドラッグしたブロックの親を削除
-        draggedBlock.parent = null
-        draggedBlock.changeText()
+        if (draggedBlock.parent) {
+            
+            this.block.forEach(item => { //検索
+                if (item.id === draggedBlock.parent) {
+                    item.children = null
+                    item.changeText()
+                }
+            })
+            //ドラッグしたブロックの親を削除
+            draggedBlock.parent = null
+            draggedBlock.changeText()
+        } else {
+            console.log("接続先がない")
+        }
     }
     connectBlock(draggedBlock, canConnectBlock) { //ブロックを接続する
         if (canConnectBlock.children === null) { //接続先がnullかどうか
