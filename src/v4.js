@@ -252,6 +252,7 @@ class Editor {
         }
     }
     connectBlock(draggedBlock, canConnectBlock) { //ブロックを接続する
+        let connectMargin=5
         if (canConnectBlock.children === null) { //接続先がnullかどうか
             /**
              * 1ブロックに接続
@@ -259,13 +260,13 @@ class Editor {
             console.log("接続できる")
             draggedBlock.parent = canConnectBlock.id //ドラッグしたブロックの親を設定
             canConnectBlock.children = draggedBlock.id //接続先の子を設定
-            //ブロックを移動させる
             let newX = canConnectBlock.x + canConnectBlock.blockWidth / 2 + draggedBlock.blockWidth / 2
             let newY = canConnectBlock.y 
 
-            let dx = newX - draggedBlock.x
-            let dy = newY -draggedBlock.y 
-            draggedBlock.x = newX
+            let dx = newX - draggedBlock.x+ connectMargin
+            let dy = newY - draggedBlock.y 
+            //ブロックを移動させる
+            draggedBlock.x = newX + connectMargin
             draggedBlock.y = newY
             draggedBlock.moveBlock(0, 0)
 
@@ -324,18 +325,20 @@ class Editor {
                 draggedTop.children = betweenBottomID
                 betweenBottom.parent = draggedTopID
 
+                let newX = betweenTop.x + betweenTop.blockWidth / 2 + draggedTop.blockWidth / 2
+                let newY = betweenTop.y
                 //ドラッグしている一つ動かす
-                draggedTop.x = betweenTop.x + betweenTop.blockWidth / 2 + draggedTop.blockWidth / 2
-                draggedTop.y = betweenTop.y
+                draggedTop.x = newX + connectMargin
+                draggedTop.y = newY
                 draggedTop.moveBlock(0, 0)
                 console.log("betweenbottom", betweenBottom)
                 //ドラッグしている直下のブロックを移動
-                betweenBottom.x = betweenBottom.x + draggedTop.blockWidth 
+                betweenBottom.x = betweenBottom.x + draggedTop.blockWidth + connectMargin
                 betweenBottom.moveBlock(0, 0)
                 //ドラッグしている直下のブロックの配下のブロックを全て移動
                 if (group) {
                     group.forEach(item => {
-                        item.moveBlock(-draggedTop.blockWidth*globalZoom , 0)
+                        item.moveBlock((-draggedTop.blockWidth - connectMargin) * globalZoom , 0)
                     })
                 }
 
@@ -366,11 +369,11 @@ class Editor {
 
                 let newX = betweenTop.x + betweenTop.blockWidth / 2 + draggedTop.blockWidth / 2 
                 let newY = betweenTop.y 
-                let dx = newX - draggedTop.x
+                let dx = newX - draggedTop.x + connectMargin
                 let dy = newY - draggedTop.y
 
                 //ドラッグしている一つ動かす
-                draggedTop.x = newX
+                draggedTop.x = newX + connectMargin
                 draggedTop.y = newY
                 draggedTop.moveBlock(0, 0)
                 
@@ -383,7 +386,7 @@ class Editor {
                 
                 let totalWidth = bottomBlocks.reduce((total, obj) => {
                     if (obj.blockWidth !== null) {
-                        return total + obj.blockWidth;
+                        return total + obj.blockWidth + connectMargin
                     } else {
                         return total;
                     }
@@ -392,14 +395,14 @@ class Editor {
 
                 //ドラッグしている直下のブロックを移動
                 console.log("下ブロック",betweenBottom)
-                betweenBottom.x = betweenBottom.x + totalWidth + draggedTop.blockWidth
+                betweenBottom.x = betweenBottom.x + totalWidth + draggedTop.blockWidth + connectMargin
                 betweenBottom.moveBlock(0, 0)
 
                 //ドラッグしている直下のブロックの配下のブロックを全て移動
                 if (betweenBottom.children) {
                     let search = this.searchBottomBlocks(betweenBottom)
                     search.forEach(item => {
-                        item.moveBlock((-totalWidth - draggedTop.blockWidth) * globalZoom, 0)
+                        item.moveBlock( -(totalWidth + draggedTop.blockWidth + connectMargin) * globalZoom, 0)
                     })
                 } 
             }
@@ -465,12 +468,20 @@ let blocks = []
 //         )
 //     )
 // }
+// blocks.push(
+//     new Block(0, 0, 100, 50, "#e74c3c", "red","主語"),
+//     new Block(200, 0, 150, 50, "#5252ff", "blue","一般動詞"),
+//     new Block(0, 200, 150, 50, "#00c921", "green","be動詞"),
+//     new Block(200, 200, 250, 50, "#F9BE01", "#CD8813","目的語"),
+//     new Block(300, 200, 150, 50, "#9967FE", "#7B52CD","補語"),
+// )
 blocks.push(
-    new Block(0, 0, 100, 50, "#e74c3c", "red","主語"),
-    new Block(200, 0, 150, 50, "#5252ff", "blue","一般動詞"),
-    new Block(0, 200, 150, 50, "#00c921", "green","be動詞"),
-    new Block(200, 200, 250, 50, "#F9BE01", "#CD8813","目的語"),
-    new Block(300, 200, 150, 50, "#9967FE", "#7B52CD","補語"),
+    new Block(0, 0, 100, 50, "#e74c3c", "red", "He"),
+    new Block(200, 0, 150, 50, "#5252ff", "blue", "gives"),
+    new Block(0, 200, 50, 50, "#00c921", "green", "is"),
+    new Block(200, 200, 80, 50, "#F9BE01", "#CD8813", "me"),
+    new Block(200, 200, 220, 50, "#F9BE01", "#CD8813", "some advice"),
+    new Block(300, 200, 200, 50, "#9967FE", "#7B52CD", "未踏ジュニア"),
 )
 blocks.forEach(function (block) {
     block.appendTo(svgArea)
