@@ -154,10 +154,20 @@ class Editor {
 
         this.element.addEventListener("mousedown", function (e) {
             if (!globalIsDrag) {
+                console.log("エディタマウスダウン")
                 self.isDrag = true
             } else {
-                console.log("エディタマウスダウン")
+                console.log("エディタ：ブロックドラッグ中")
+                //操作しているブロックを全て上に持ってくる
                 globalDraggedBlock = self.findDraggedBlock(self.block)
+                if (globalDraggedBlock.children) {
+                    let bottomBlocks = self.searchBottomBlocks(globalDraggedBlock)
+                    if (bottomBlocks) {
+                        bottomBlocks.forEach(item => { 
+                            item.bringToFront()
+                        })
+                    }
+                }
                 console.log("ドラッグ中(配下含め)", globalDraggedBlock)
                 self.deleteConnect(globalDraggedBlock)
             }
@@ -179,6 +189,7 @@ class Editor {
                 globalDraggedBlock = self.findDraggedBlock(self.block)
                 canConnectBlock = self.isConnectBlock(globalDraggedBlock)
 
+                //ドラッグしているブロックに子があるか判定
                 let bottomBlocks
                 if (globalDraggedBlock.children) {
                     bottomBlocks = self.searchBottomBlocks(globalDraggedBlock)
