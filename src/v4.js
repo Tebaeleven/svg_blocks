@@ -487,12 +487,12 @@ let blocks = []
 //     new Block(300, 200, 150, 50, "#9967FE", "#7B52CD","補語"),
 // )
 blocks.push(
-    new Block(0, 0, 100, 50, "#e74c3c", "red", "He"),
-    new Block(200, 0, 150, 50, "#5252ff", "blue", "gives"),
+    new Block(0, 0, 75, 50, "#e74c3c", "red", "He"),
+    new Block(200, 0, 110, 50, "#5252ff", "blue", "gives"),
     new Block(0, 200, 50, 50, "#00c921", "green", "is"),
     new Block(200, 200, 80, 50, "#F9BE01", "#CD8813", "me"),
     new Block(200, 200, 220, 50, "#F9BE01", "#CD8813", "some advice"),
-    new Block(300, 200, 200, 50, "#9967FE", "#7B52CD", "未踏ジュニア"),
+    new Block(300, 200, 205, 50, "#9967FE", "#7B52CD", "未踏ジュニア"),
 )
 blocks.forEach(function (block) {
     block.appendTo(svgArea)
