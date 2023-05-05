@@ -8,13 +8,13 @@ console.log(BlockDom)
 
 let globalCameraX = 0
 let globalCameraY = 0
-let globalZoom = 2
+let globalZoom = 1
 let globalIsDrag = false
 let dx, dy
 
 class Block{
     static counter = 0
-    constructor(x, y, width, height, fill, stroke) {
+    constructor(x, y, width, height, fill, stroke,dummyText) {
         this.x = x
         this.y = y
         this.id = Block.counter++
@@ -22,6 +22,7 @@ class Block{
         this.rect = this.element.getElementsByTagName("rect")
         this.connect = this.element.getElementById("connect")
         this.text = this.element.getElementById("dummy")
+        this.text.textContent = dummyText
         this.connect.style.display = "none";
         this.isTopBlock=false
         this.parent = null
@@ -30,6 +31,7 @@ class Block{
         let self = this
         let newX = 0
         let newY = 0
+        this.dummyText=dummyText
         this.rect[0].setAttribute("width", width)
         this.rect[0].setAttribute("height", height)
         this.rect[0].setAttribute("fill", fill)
@@ -100,9 +102,13 @@ class Block{
         this.moveXY(this.x, this.y)
     }
     changeText() {
+        if (!this.dummyText) {
+            
         this.element.getElementById("dummy").textContent = "ID:" + this.id + ", " 
             + "↑" + this.parent
-            +"↓" + this.children
+            + "↓" + this.children
+        }
+
     }
     appendTo(parentElement) {
         parentElement.appendChild(this.element);
@@ -254,11 +260,13 @@ class Editor {
             draggedBlock.parent = canConnectBlock.id //ドラッグしたブロックの親を設定
             canConnectBlock.children = draggedBlock.id //接続先の子を設定
             //ブロックを移動させる
-            let newX = canConnectBlock.x + canConnectBlock.blockWidth / 2 + draggedBlock.blockWidth / 2 - draggedBlock.x
-            let newY = canConnectBlock.y - draggedBlock.y
+            let newX = canConnectBlock.x + canConnectBlock.blockWidth / 2 + draggedBlock.blockWidth / 2
+            let newY = canConnectBlock.y 
 
-            draggedBlock.x = canConnectBlock.x + canConnectBlock.blockWidth / 2 + draggedBlock.blockWidth / 2
-            draggedBlock.y = canConnectBlock.y
+            let dx = newX - draggedBlock.x
+            let dy = newY -draggedBlock.y 
+            draggedBlock.x = newX
+            draggedBlock.y = newY
             draggedBlock.moveBlock(0, 0)
 
             let bottomBlocks
@@ -268,7 +276,7 @@ class Editor {
             console.log(bottomBlocks)
             if (bottomBlocks) {
                 bottomBlocks.forEach(item => {
-                    item.moveBlock(-newX * globalZoom, -newY * globalZoom )
+                    item.moveBlock(-dx * globalZoom, -dy * globalZoom )
                 })
             }
 
@@ -356,18 +364,20 @@ class Editor {
                 draggedBottom.children = betweenBottomID //子
                 draggedTop.parent = betweenTopID //親
 
-                let newX = betweenTop.x + betweenTop.blockWidth / 2 + draggedTop.blockWidth / 2 - draggedTop.x
-                let newY = betweenTop.y - draggedTop.y
+                let newX = betweenTop.x + betweenTop.blockWidth / 2 + draggedTop.blockWidth / 2 
+                let newY = betweenTop.y 
+                let dx = newX - draggedTop.x
+                let dy = newY - draggedTop.y
 
                 //ドラッグしている一つ動かす
-                draggedTop.x = betweenTop.x + betweenTop.blockWidth / 2 + draggedTop.blockWidth / 2
-                draggedTop.y = betweenTop.y
+                draggedTop.x = newX
+                draggedTop.y = newY
                 draggedTop.moveBlock(0, 0)
                 
                 //ドラッグしている操作中のものを全て移動させる
                 if (group) {
                     group.forEach(item => {
-                        item.moveBlock(-newX * globalZoom, -newY * globalZoom)
+                        item.moveBlock(-dx * globalZoom, -dy * globalZoom)
                     })
                 }
                 
@@ -430,6 +440,7 @@ class Editor {
         }
     }
 }
+drawXYAxis()
 
 
 let blocks = []
@@ -455,11 +466,11 @@ let blocks = []
 //     )
 // }
 blocks.push(
-    new Block(0, 0, 150, 50, "#e74c3c", "red",),
-    new Block(200, 0, 300, 50, "#5252ff", "blue",),
-    new Block(0, 200, 300, 50, "#00c921", "green",),
-    new Block(200, 200, 150, 50, "yellow", "orange",),
-    new Block(300, 200, 150, 50, "#e74c3c", "red",),
+    new Block(0, 0, 100, 50, "#e74c3c", "red","主語"),
+    new Block(200, 0, 150, 50, "#5252ff", "blue","一般動詞"),
+    new Block(0, 200, 150, 50, "#00c921", "green","be動詞"),
+    new Block(200, 200, 250, 50, "#F9BE01", "#CD8813","目的語"),
+    new Block(300, 200, 150, 50, "#9967FE", "#7B52CD","補語"),
 )
 blocks.forEach(function (block) {
     block.appendTo(svgArea)
@@ -467,7 +478,6 @@ blocks.forEach(function (block) {
 
 let myEditor = new Editor(0, 0, blocks)
 
-drawXYAxis()
 
 function getRandomArbitrary(min, max) {
     return Math.random() * (max - min) + min;
