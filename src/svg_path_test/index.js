@@ -27,34 +27,44 @@
 //     .attr("id", "2");
 const svg = d3.select("#block-path");
 
-let output = 2
+let rightConnect =1
+let leftConnect = 1
+let blockRadius = 10
+let blockWidth = 200
+let blockHeight = 60
 function drawBlock() {
     const path = d3.path();
 
-    path.moveTo(5, 5)
+    path.moveTo(5+blockRadius, 5)
 
-    path.lineTo(205, 5)
+    // path.lineTo(5 + blockWidth, 5)
+    // path.lineTo(5 + blockWidth - blockRadius, 5)
+    path.arcTo(5 + blockWidth, 5, 5 + blockWidth, 15,blockRadius)
+    
+    if (rightConnect===1) {
+        makeRightConnect(0, -5, 10, -15, path,1)
+        makeRightConnect(0, 20, 10, -15, path,1)
 
-    switch (output) {
-        case 1:
-            path.lineTo(205, 20)
-            path.lineTo(225, 25)
-            path.lineTo(225, 45)
-            path.lineTo(205, 50)
-            break;
-        case 2:
-            path.lineTo(205, 20)
-            path.lineTo(185, 25)
-            path.lineTo(185, 45)
-            path.lineTo(205, 50)
-            break
-        default:
-            break;
+    } else {
+        makeRightConnect(0, -5, -10, -15, path,1)
+        makeRightConnect(0, 20, -10, -15, path,1)
     }
 
 
-    path.lineTo(205, 65)
-    path.lineTo(5, 65)
+
+    // path.lineTo(blockWidth + 5, blockHeight + 5)
+    path.arcTo(blockWidth + 5, blockHeight + 5, blockWidth + 5 - 5, blockHeight + 5, blockRadius)
+    
+    path.arcTo(5, blockHeight + 5, 5, blockHeight, blockRadius)
+    if (leftConnect===1) {
+        makeLeftConnect(0, 20, 10, -15, path, 1)
+        makeLeftConnect(0, -5, 10, -15, path, 1)
+    } else {
+        makeLeftConnect(0, 20, 10, -15, path, 1)
+        makeLeftConnect(0, -5, -10, -15, path, 1)
+    }
+
+    path.arcTo(5,5,10,5, blockRadius)
 
 
     path.closePath();
@@ -69,11 +79,43 @@ function drawBlock() {
 drawBlock()
 let block = document.getElementById("block-path")
 block.addEventListener("click", function () {
-    if (output===1) {
-        output=2
+    if (rightConnect===1) {
+        rightConnect=-1
     } else {
-        output=1
+        rightConnect=1
+    }
+    if (leftConnect === 1) {
+        leftConnect = -1
+    } else {
+        leftConnect = 1
     }
     drawBlock()
 
 })
+
+function makeRightConnect(x, y, width, height, path,type) {
+
+    switch (type) {
+        case 1:
+            path.lineTo((blockWidth + 5), (blockHeight - 40 ) + y)
+            path.lineTo((blockWidth + 5) + width, (blockHeight - 35  ) + y)
+            path.lineTo((blockWidth + 5) + width, (blockHeight - 15 + height ) + y)
+            path.lineTo((blockWidth + 5), (blockHeight - 10 + height) + y)
+            break;
+        default:
+            break;
+    }
+}
+
+function makeLeftConnect(x, y, width, height, path, type) {
+    switch (type) {
+        case 1:
+            path.lineTo(5, (blockHeight - 10 + height) + y)
+            path.lineTo(5 + width, (blockHeight - 15 + height) + y)
+            path.lineTo(5 + width, (blockHeight - 35) + y)
+            path.lineTo(5, (blockHeight - 40) + y)
+            break;
+        default:
+            break;
+    }
+}
