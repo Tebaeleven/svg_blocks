@@ -1,5 +1,5 @@
 let svgArea = document.getElementById("svg")
-let BlockDom = document.getElementById("rect");
+let BlockDom = document.getElementById("top-rect");
 const svgWidth=svgArea.clientWidth
 const svgHeight=svgArea.clientHeight
 console.log(svgArea)
@@ -19,44 +19,38 @@ class Block{
         this.y = y
         this.id = Block.counter++
         this.element = BlockDom.cloneNode(true);
-        this.rect = this.element.getElementsByTagName("rect")
         this.connect = this.element.getElementById("connect")
         this.text = this.element.getElementById("dummy")
+        this.svg = d3.select("#block-path");
         this.text.textContent = dummyText
         this.connect.style.display = "none";
         this.isTopBlock=false
         this.parent = null
         this.children = null
         this.isDrag = false
+        this.blockRadius=10
         let self = this
         let newX = 0
         let newY = 0
         this.dummyText=dummyText
-        this.rect[0].setAttribute("width", width)
-        this.rect[0].setAttribute("height", height)
-        this.rect[0].setAttribute("fill", fill)
-        this.rect[0].setAttribute("stroke", stroke)
+
         this.connect.setAttribute("x", width + 15)
         let textWidth
         document.addEventListener("DOMContentLoaded", function () {
             textWidth=self.text.getBBox()
             console.log("読み終わった", textWidth)
+
         })
-        this.blockWidth = (() => {
-            let width = this.rect[0].getAttribute("width")
-            return Number(width)
-        })();
+        this.blockWidth = width
         console.log("ブロックの幅", this.blockWidth)
-        this.blockHeight = (() => {
-            let height = this.rect[0].getAttribute("height")
-            return Number(height)
-        })()
+        this.blockHeight = height
         console.log("ブロックの高さ", this.blockHeight)
 
         this.moveXY(x, y)
         this.setSize()
         this.setTextXY()
-        
+        this.drawBlock(this.blockWidth, this.blockHeight, this.blockRadius)
+
         this.element.addEventListener("mousedown", function (e) {
             globalIsDrag = true
             console.log("マウスダウン")
@@ -89,6 +83,64 @@ class Block{
         })
     }
 
+    drawBlock(blockWidth, blockHeight, blockRadius) {
+        const path = d3.path();
+        console.log()
+        let rightConnect = 1
+        let leftConnect=1
+        path.moveTo(5 + blockRadius, 5)
+        path.arcTo(5 + blockWidth, 5, 5 + blockWidth, 15, blockRadius)
+
+        // if (rightConnect === 1) {
+        //     this.makeRightConnect(0, 10, 0, path, 1, blockWidth, blockHeight)
+        // } else {
+        //     this.makeRightConnect(-5, 10, -15, path, 1, blockWidth, blockHeight)
+        //     this.makeRightConnect(20, 10, -15, path, 1, blockWidth, blockHeight)
+        // }
+
+        path.arcTo(blockWidth + 5, blockHeight + 5, blockWidth + 5 - 5, blockHeight + 5, blockRadius)
+        path.arcTo(5, blockHeight + 5, 5, blockHeight, blockRadius)
+
+        // if (leftConnect === 1) {
+        //     this.makeLeftConnect(0, 10, 0, path, 1, blockWidth, blockHeight)
+        // } else {
+        //     this.makeLeftConnect(20, 10, -15, path, 1, blockWidth, blockHeight)
+        //     this.makeLeftConnect(-5, 10, -15, path, 1, blockWidth, blockHeight)
+        // }
+
+        path.arcTo(5, 5, 10, 5, blockRadius)
+        path.closePath()
+
+        this.svg
+            .attr("d", path)
+            .attr("fill", "#e74c3c")
+            .attr("stroke", "red")
+            .attr("stroke-width", "4")
+    }
+    makeRightConnect(y, width, height, path, type, blockWidth, blockHeight) {
+        switch (type) {
+            case 1:
+                path.lineTo((blockWidth + 5), (blockHeight - 40) + y)
+                path.lineTo((blockWidth + 5) + width, (blockHeight - 35) + y)
+                path.lineTo((blockWidth + 5) + width, (blockHeight - 15 + height) + y)
+                path.lineTo((blockWidth + 5), (blockHeight - 10 + height) + y)
+                break;
+            default:
+                break;
+        }
+    }
+    makeLeftConnect(y, width, height, path, type, blockWidth, blockHeight) {
+        switch (type) {
+            case 1:
+                path.lineTo(5, (blockHeight - 10 + height) + y)
+                path.lineTo(5 + width, (blockHeight - 15 + height) + y)
+                path.lineTo(5 + width, (blockHeight - 35) + y)
+                path.lineTo(5, (blockHeight - 40) + y)
+                break;
+            default:
+                break;
+        }
+    }
     setTextXY() {
         // this.element.getElementById("xy").textContent = "x:" + Math.floor(this.x) + "y:" + Math.floor(this.y)
     }
@@ -487,12 +539,13 @@ let blocks = []
 //     new Block(300, 200, 150, 50, "#9967FE", "#7B52CD","補語"),
 // )
 blocks.push(
-    new Block(0, 0, 75, 50, "#e74c3c", "red", "He"),
-    new Block(200, 0, 110, 50, "#5252ff", "blue", "gives"),
-    new Block(0, 200, 50, 50, "#00c921", "green", "is"),
-    new Block(200, 200, 80, 50, "#F9BE01", "#CD8813", "me"),
-    new Block(200, 200, 220, 50, "#F9BE01", "#CD8813", "some advice"),
-    new Block(300, 200, 205, 50, "#9967FE", "#7B52CD", "未踏ジュニア"),
+    // new Block(0, 0, 75, 60, "#e74c3c", "red", "He"),
+    new Block(200, 0, 110, 60, "#5252ff", "blue", "gives"),
+    new Block(200, 0, 110, 60, "#5252ff", "blue", "gives"),
+    // new Block(0, 200, 50, 60, "#00c921", "green", "is"),
+    // new Block(200, 200, 80, 60, "#F9BE01", "#CD8813", "me"),
+    // new Block(200, 200, 220, 60, "#F9BE01", "#CD8813", "some advice"),
+    // new Block(300, 200, 205, 60, "#9967FE", "#7B52CD", "未踏ジュニア"),
 )
 blocks.forEach(function (block) {
     block.appendTo(svgArea)
