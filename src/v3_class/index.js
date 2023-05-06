@@ -21,6 +21,9 @@ class Block{
         this.element = BlockDom.cloneNode(true);
         this.connect = this.element.getElementById("connect")
         this.text = this.element.getElementById("dummy")
+        this.svg = this.element.getElementById("block-path")
+        this.fill = fill
+        this.stroke=stroke
         this.text.textContent = dummyText
         this.connect.style.display = "none";
         this.isTopBlock=false
@@ -109,11 +112,11 @@ class Block{
 
         path.arcTo(5, 5, 10, 5, blockRadius)
         path.closePath()
-        let svg = this.element.getElementById("block-path")
-        svg.setAttribute("d", path)
-        svg.setAttribute("fill", "#e74c3c")
-        svg.setAttribute("stroke", "red")
-        svg.setAttribute("stroke-width", "5")
+
+        this.svg.setAttribute("d", path)
+        this.svg.setAttribute("fill", this.fill)
+        this.svg.setAttribute("stroke", this.stroke)
+        this.svg.setAttribute("stroke-width", "5")
     }
     makeRightConnect(y, width, height, path, type, blockWidth, blockHeight) {
         switch (type) {
@@ -537,12 +540,12 @@ let blocks = []
 //     new Block(300, 200, 150, 50, "#9967FE", "#7B52CD","補語"),
 // )
 blocks.push(
-    new Block(0, 0, 75, 60, "#e74c3c", "red", "He"),
-    new Block(200, 0, 110, 60, "#5252ff", "blue", "gives"),
-    new Block(0, 200, 50, 60, "#00c921", "green", "is"),
-    new Block(200, 200, 80, 60, "#F9BE01", "#CD8813", "me"),
-    new Block(200, 200, 220, 60, "#F9BE01", "#CD8813", "some advice"),
-    new Block(300, 200, 205, 60, "#9967FE", "#7B52CD", "未踏ジュニア"),
+    new Block(-430 + 75/2, -250, 75, 60, "#e74c3c", "red", "He"),
+    new Block(-430 + 110/2, -150, 110, 60, "#5252ff", "blue", "gives"),
+    new Block(-430 + 100/2, -50, 100, 60, "#00c921", "green", "is"),
+    new Block(-430 + 80/2, 50, 80, 60, "#F9BE01", "#CD8813", "me"),
+    new Block(-430 + 220/2, 150, 220, 60, "#F9BE01", "#CD8813", "some advice"),
+    new Block(-430 + 205 /2, 250, 205, 60, "#9967FE", "#7B52CD", "未踏ジュニア"),
 )
 blocks.forEach(function (block) {
     block.appendTo(svgArea)
