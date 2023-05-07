@@ -24,6 +24,8 @@ class Block{
         this.svg = this.element.getElementById("block-path")
         this.left = this.element.getElementById("left")
         this.right = this.element.getElementById("right")
+        this.leftTypeText = this.element.getElementById("leftType")
+        this.rightTypeText = this.element.getElementById("rightType")
         this.fill = fill
         this.stroke = stroke
         this.leftConnect = leftConnect
@@ -197,6 +199,12 @@ class Block{
         this.left.textContent = "←" + this.parent
         this.right.textContent = "→" + this.children
 
+        this.rightTypeText.textContent = this.rightConnect
+        this.rightTypeText.setAttribute("x", this.blockWidth)
+        this.rightTypeText.setAttribute("y", this.blockHeight/2+10)
+        this.leftTypeText.textContent = this.leftConnect
+        this.leftTypeText.setAttribute("x", 0)
+        this.leftTypeText.setAttribute("y", this.blockHeight / 2 + 10)
     }
     appendTo(parentElement) {
         parentElement.appendChild(this.element);
@@ -529,12 +537,15 @@ class Editor {
                 let rightY = Math.abs(draggedBlock.y - nearBlock.y)
                 let right = rightX < margin && rightY < margin
                 if (right) {
-                    canConnect = nearBlock
+                    if (draggedBlock.leftConnect === nearBlock.rightConnect) {
+                        canConnect = nearBlock
+                    }
                 }
             }
         })
 
         if (canConnect) { //接続先が見つかった場合
+            console.log("近くのブロックの接続先Type", canConnect.leftConnect, canConnect.rightConnect)
             canConnect.connect.style.display = "block"
             return canConnect
         } else { //接続先がなかった場合
