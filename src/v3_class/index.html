@@ -15,8 +15,8 @@
     <svg id="svg" width="900" height="600"
         style="border-width: thick; border-color: black; border-style: solid; display: block; margin: auto;"
         >
-        <svg id="top-rect" x="0" y="0" width="2000">
-            <g transform="scale(1)" width="10">
+        <svg id="top-rect" x="0" y="0">
+            <g transform="scale(1) ">
                 <!-- <rect id="block"
                     x="5"y="5"
                     width="260"height="50"
@@ -26,7 +26,9 @@
 
                 <path id="block-path"></path>
 
-                <text id="dummy" x="25" y="44" font-size="30">ダミーテキスト</text>
+                <text id="dummy" x="23" y="45" font-size="30">ダミーテキスト</text>
+                <text id="left" x="0" y="0" font-size="20">←</text>
+                <text id="right" x="50" y="90" font-size="20">→</text>
 
                 <rect id="connect" x="275" y="5" width="10" height="100" rx="5" ry="5" fill="yellow" stroke="orange" stroke-width="5" />
             </g>
@@ -51,6 +53,7 @@
         padding: 0;
         margin: 0;
         user-select: none;
+        background-color: black;
     }
     #connect{
         display: none;

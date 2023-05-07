@@ -13,8 +13,8 @@ let globalIsDrag = false
 let dx, dy
 
 class Block{
-    static counter = 0
-    constructor(x, y, width, height, fill, stroke,dummyText) {
+    static counter = 1
+    constructor(x, y, width, height, fill, stroke, dummyText, leftConnect, rightConnect) {
         this.x = x
         this.y = y
         this.id = Block.counter++
@@ -22,8 +22,12 @@ class Block{
         this.connect = this.element.getElementById("connect")
         this.text = this.element.getElementById("dummy")
         this.svg = this.element.getElementById("block-path")
+        this.left = this.element.getElementById("left")
+        this.right = this.element.getElementById("right")
         this.fill = fill
-        this.stroke=stroke
+        this.stroke = stroke
+        this.leftConnect = leftConnect
+        this.rightConnect = rightConnect
         this.text.textContent = dummyText
         this.connect.style.display = "none";
         this.isTopBlock=false
@@ -51,7 +55,7 @@ class Block{
         this.moveXY(x, y)
         this.setSize()
         this.setTextXY()
-        this.drawBlock(this.blockWidth, this.blockHeight, this.blockRadius)
+        this.drawBlock(this.blockWidth, this.blockHeight, this.blockRadius,this.leftConnect,this.rightConnect)
 
         this.element.addEventListener("mousedown", function (e) {
             globalIsDrag = true
@@ -85,30 +89,65 @@ class Block{
         })
     }
 
-    drawBlock(blockWidth, blockHeight, blockRadius) {
+    drawBlock(blockWidth, blockHeight, blockRadius,leftConnect,rightConnect) {
         const path = d3.path();
         console.log(this.dummyText, path)
-        let rightConnect = 1
-        let leftConnect=1
+        let startX=5
         path.moveTo(5 + blockRadius, 5)
         path.arcTo(5 + blockWidth, 5, 5 + blockWidth, 15, blockRadius)
 
-        if (rightConnect === 1) {
-            this.makeRightConnect(0, 10, 0, path, 1, blockWidth, blockHeight)
-        } else {
-            this.makeRightConnect(-5, 10, -15, path, 1, blockWidth, blockHeight)
-            this.makeRightConnect(20, 10, -15, path, 1, blockWidth, blockHeight)
+        switch (rightConnect) {
+            case 1:
+                this.makeRightConnect(0, 10, 0, path, 1, blockWidth, blockHeight)
+                break;
+            case -1:
+                this.makeRightConnect(0, -10, 0, path, 1, blockWidth, blockHeight)
+                break
+            case 2:
+                this.makeRightConnect(-5, 10, -15, path, 1, blockWidth, blockHeight)
+                this.makeRightConnect(20, 10, -15, path, 1, blockWidth, blockHeight)
+                break
+            case -2:
+                this.makeRightConnect(-5, -10, -15, path, 1, blockWidth, blockHeight)
+                this.makeRightConnect(20, -10, -15, path, 1, blockWidth, blockHeight)
+                break
+            default:
+                break;
         }
+        // if (rightConnect === 1) {
+        //     this.makeRightConnect(0, 10, 0, path, 1, blockWidth, blockHeight)
+        // } else {
+        //     this.makeRightConnect(-5, 10, -15, path, 1, blockWidth, blockHeight)
+        //     this.makeRightConnect(20, 10, -15, path, 1, blockWidth, blockHeight)
+        // }
 
         path.arcTo(blockWidth + 5, blockHeight + 5, blockWidth + 5 - 5, blockHeight + 5, blockRadius)
         path.arcTo(5, blockHeight + 5, 5, blockHeight, blockRadius)
+        
+        switch (leftConnect) {
+            case 1:
+                this.makeLeftConnect(0, 10, 0, path, 1, blockWidth, blockHeight)
 
-        if (leftConnect === 1) {
-            this.makeLeftConnect(0, 10, 0, path, 1, blockWidth, blockHeight)
-        } else {
-            this.makeLeftConnect(20, 10, -15, path, 1, blockWidth, blockHeight)
-            this.makeLeftConnect(-5, 10, -15, path, 1, blockWidth, blockHeight)
+                break;
+            case -1:
+                this.makeLeftConnect(0, -10, 0, path, 1, blockWidth, blockHeight)
+
+                break
+            case 2:
+                this.makeLeftConnect(20, 10, -15, path, 1, blockWidth, blockHeight)
+                this.makeLeftConnect(-5, 10, -15, path, 1, blockWidth, blockHeight)
+                break
+            case -2:
+                this.makeLeftConnect(20, -10, -15, path, 1, blockWidth, blockHeight)
+                this.makeLeftConnect(-5, -10, -15, path, 1, blockWidth, blockHeight)
+                break
+            default:
+                break;
         }
+        // if (leftConnect === 1) {
+        // } else {
+
+        // }
 
         path.arcTo(5, 5, 10, 5, blockRadius)
         path.closePath()
@@ -155,12 +194,8 @@ class Block{
         this.moveXY(this.x, this.y)
     }
     changeText() {
-        if (!this.dummyText) {
-            
-        this.element.getElementById("dummy").textContent = "ID:" + this.id + ", " 
-            + "↑" + this.parent
-            + "↓" + this.children
-        }
+        this.left.textContent = "←" + this.parent
+        this.right.textContent = "→" + this.children
 
     }
     appendTo(parentElement) {
@@ -173,10 +208,10 @@ class Block{
         this.element.setAttribute("y", this.calculateY(y))
     }
     calculateX(x) {
-        return ((x + globalCameraX) * globalZoom) + (svgWidth / 2)  - (this.blockWidth / 2) * globalZoom - 5 * globalZoom
+        return ((x + globalCameraX) * globalZoom) + (svgWidth / 2)  - (this.blockWidth / 2) * globalZoom - 15 * globalZoom
     }
     calculateY(y) {
-        return ((y + globalCameraY) * globalZoom) + (svgHeight / 2)  - (this.blockHeight / 2) * globalZoom - 5 * globalZoom
+        return ((y + globalCameraY) * globalZoom) + (svgHeight / 2)  - (this.blockHeight / 2) * globalZoom - 20 * globalZoom
     }
     scrollBlock() {
         this.setSize()
@@ -184,7 +219,7 @@ class Block{
     }
     setSize() {
         let g = this.element.getElementsByTagName("g")
-        g[0].setAttribute("transform", "scale(" + globalZoom + ")")
+        g[0].setAttribute("transform", "scale(" + globalZoom + ")" +"translate(10,20)")
     }
 }
 
@@ -540,12 +575,13 @@ let blocks = []
 //     new Block(300, 200, 150, 50, "#9967FE", "#7B52CD","補語"),
 // )
 blocks.push(
-    new Block(-430 + 75/2, -250, 75, 60, "#e74c3c", "red", "He"),
-    new Block(-430 + 110/2, -150, 110, 60, "#5252ff", "blue", "gives"),
-    new Block(-430 + 100/2, -50, 100, 60, "#00c921", "green", "is"),
-    new Block(-430 + 80/2, 50, 80, 60, "#F9BE01", "#CD8813", "me"),
-    new Block(-430 + 220/2, 150, 220, 60, "#F9BE01", "#CD8813", "some advice"),
-    new Block(-430 + 205 /2, 250, 205, 60, "#9967FE", "#7B52CD", "未踏ジュニア"),
+    // new Block(-430 + 75 / 2, -250, 75, 60, "#e74c3c", "red", "He", 2, 2),
+    new Block(0, 0, 75, 60, "#e74c3c", "red", "He", -1, 1),
+    new Block(-430 + 110 / 2, -150, 110, 60, "#5252ff", "blue", "gives", 2,1),
+    new Block(-430 + 50 / 2, -50, 50, 60, "#00c921", "green", "is", 1, 1),
+    new Block(-430 + 80 / 2, 50, 80, 60, "#F9BE01", "#CD8813", "me", 1, 1),
+    new Block(-430 + 220 / 2, 150, 220, 60, "#F9BE01", "#CD8813", "some advice", 1, 1),
+    new Block(-430 + 205 / 2, 250, 205, 60, "#9967FE", "#7B52CD", "未踏ジュニア", 1, 1),
 )
 blocks.forEach(function (block) {
     block.appendTo(svgArea)
