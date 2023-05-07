@@ -11,6 +11,7 @@ let globalCameraY = 0
 let globalZoom = 1
 let globalIsDrag = false
 let dx, dy
+let globalDebugMode=true
 
 class Block{
     static counter = 1
@@ -196,15 +197,17 @@ class Block{
         this.moveXY(this.x, this.y)
     }
     changeText() {
-        this.left.textContent = "←" + this.parent
-        this.right.textContent = "→" + this.children
+        if (globalDebugMode) {
+            this.left.textContent = "←" + this.parent
+            this.right.textContent = "→" + this.children
 
-        this.rightTypeText.textContent = this.rightConnect
-        this.rightTypeText.setAttribute("x", this.blockWidth)
-        this.rightTypeText.setAttribute("y", this.blockHeight/2+10)
-        this.leftTypeText.textContent = this.leftConnect
-        this.leftTypeText.setAttribute("x", 0)
-        this.leftTypeText.setAttribute("y", this.blockHeight / 2 + 10)
+            this.rightTypeText.textContent = this.rightConnect
+            this.rightTypeText.setAttribute("x", this.blockWidth)
+            this.rightTypeText.setAttribute("y", this.blockHeight / 2 + 10)
+            this.leftTypeText.textContent = this.leftConnect
+            this.leftTypeText.setAttribute("x", 0)
+            this.leftTypeText.setAttribute("y", this.blockHeight / 2 + 10)
+        }
     }
     appendTo(parentElement) {
         parentElement.appendChild(this.element);
@@ -527,17 +530,34 @@ class Editor {
     isConnectBlock(dragged) { //接続できるか判定
         let draggedBlock = dragged
         let canConnect
+        let myObject = this.block
 
         this.block.forEach(b => { //ドラッグされていないブロックを見つける
             if (!b.isDrag) {
                 let nearBlock = b
                 nearBlock.connect.style.display = "none"
+
                 let margin = 50
+
                 let rightX = Math.abs((draggedBlock.x - draggedBlock.blockWidth / 2) - (nearBlock.x + nearBlock.blockWidth / 2))
                 let rightY = Math.abs(draggedBlock.y - nearBlock.y)
                 let right = rightX < margin && rightY < margin
-                if (right) {
-                    if (draggedBlock.leftConnect === nearBlock.rightConnect) {
+
+                if (right) { //接続先の右に接続できる場合
+                    //接続先の子要素
+                    let childId = nearBlock.children
+                    
+                    let leftCheck = draggedBlock.leftConnect === nearBlock.rightConnect//接続先の左に接続できるか
+                    let rightCheck = true //接続先の子要素の左（ドラッグ側から見て右）が接続できるか
+                    
+                    //接続先に子要素があった場合
+                    if (childId) {
+                        let childBlock = myObject.find(obj => obj.id === childId); // 子要素のオブジェクトを取得
+                        rightCheck = draggedBlock.rightConnect === childBlock.leftConnect
+                    }
+
+                    //左と右が接続できる時
+                    if (leftCheck&&rightCheck) {
                         canConnect = nearBlock
                     }
                 }
@@ -586,13 +606,15 @@ let blocks = []
 //     new Block(300, 200, 150, 50, "#9967FE", "#7B52CD","補語"),
 // )
 blocks.push(
-    // new Block(-430 + 75 / 2, -250, 75, 60, "#e74c3c", "red", "He", 2, 2),
-    new Block(0, 0, 75, 60, "#e74c3c", "red", "He", -1, 1),
+    new Block(-430 + 75 / 2, -250, 75, 60, "#e74c3c", "red", "He", 2, 2),
+    // new Block(0, 0, 75, 60, "#e74c3c", "red", "He", 2, 2),
     new Block(-430 + 110 / 2, -150, 110, 60, "#5252ff", "blue", "gives", 2,1),
-    new Block(-430 + 50 / 2, -50, 50, 60, "#00c921", "green", "is", 1, 1),
+    new Block(-430 + 50 / 2, -50, 50, 60, "#00c921", "green", "is", 2, 1),
     new Block(-430 + 80 / 2, 50, 80, 60, "#F9BE01", "#CD8813", "me", 1, 1),
     new Block(-430 + 220 / 2, 150, 220, 60, "#F9BE01", "#CD8813", "some advice", 1, 1),
     new Block(-430 + 205 / 2, 250, 205, 60, "#9967FE", "#7B52CD", "未踏ジュニア", 1, 1),
+    new Block(-430 + 93/2, 350, 93, 60, "#e74c3c", "red", "and", 1, -1),
+
 )
 blocks.forEach(function (block) {
     block.appendTo(svgArea)
