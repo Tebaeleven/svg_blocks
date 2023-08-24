@@ -280,7 +280,7 @@ class Editor {
                 self.cameraY = self.cameraY - dy / globalZoom
                 globalCameraX = self.cameraX
                 globalCameraY = self.cameraY
-                document.getElementById("camera_data").textContent = "camera_x: " + Math.floor(self.cameraX) + "camera_y: " + Math.floor(self.cameraY)
+                document.getElementById("camera_data").textContent = "camera_x: " + Math.floor(self.cameraX) + " , camera_y: " + Math.floor(self.cameraY)
                 self.block.forEach(function (b) {
                     b.scrollBlock();
                 });
